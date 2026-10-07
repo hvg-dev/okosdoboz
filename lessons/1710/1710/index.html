@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"> 
+    <link rel="stylesheet" type="text/css" href="../lib/fullscreenbody.css">
+    <script type="text/javascript" src="../lib/okosdoboz.js" name="carco" project="okosdoboz" lib="../lib/"></script>
+    <script type="text/javascript" src="../lib/odconfig_user.js"></script>
+    <script type="text/javascript" src="index.js"></script>
+</head>
+<body>
+<div class="odPlayer" id="odPlayer"></div>
+<script>
+    window.onload = function() {
+        carco.functions.loadProjects(function(){
+            carco.data.okosdoboz.createPlayer();
+        });
+    };
+</script>
+</body>
+</html>

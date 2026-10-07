@@ -1,0 +1,154 @@
+.drwmsg-game-header, .drwmsg-player-header-bg, .drwmsg-gamein {
+    border-color: rgba(107, 107, 107, 0.2)!important;
+    box-shadow: 0px 1px 10px rgba(136, 136, 136, 0)!important;
+}
+
+.drwmsg-nav_ul.checkbutton {
+    background-image: url(img/readytocheck.png);
+    width: 200px!important;
+    //margin-top: -1px!important;
+    margin-right: -1px;
+    background-position: -1px;
+    color: #ffffff!important;
+    font-size: 17px!important;
+    padding-left: 52px!important;
+    text-shadow: none!important;
+    font-weight: bold;
+    padding-right: 0px;
+    border-left: none;
+    height: 52px;
+    background-repeat: no-repeat;
+    background-position: 0px 0;
+    line-height: 40px!important;
+    width: 0px!important;
+    -webkit-transition: width 0.25s;
+    -moz-transition: width 0.25s;
+    -o-transition: width 0.25s;
+    transition: width 0.25s;
+    text-overflow: clip;
+    overflow: hidden;
+}
+
+.drwmsg-nav_ul.solutionbutton {
+    background-image: url(img/answer_button.png);
+    width: 110px!important;
+    //margin-top: -1px!important;
+    -webkit-border-top-right-radius: 6px;
+    -moz-border-radius-topright: 6px;
+    border-top-right-radius: 6px;
+    margin-right: -1px;
+    background-position: -1px;
+    color: #ffffff!important;
+    font-size: 17px!important;
+    text-shadow: none!important;
+    font-weight: bold;
+    padding-right: 0px;
+    border-left: none;
+    height: 52px;
+    background-repeat: no-repeat;
+    background-position: 0px 0;
+    line-height: 40px!important;
+    -webkit-transition: width 0.25s;
+    -moz-transition: width 0.25s;
+    -o-transition: width 0.25s;
+    transition: width 0.25s;
+    text-overflow: clip;
+    overflow: hidden;
+    background-repeat: repeat-x;
+}
+
+.drwmsg-nav_ul.nextbutton {
+    background-image: url(img/readytocheck.png);
+    width: 150px!important;
+    //margin-top: -1px!important;
+    -webkit-border-top-right-radius: 6px;
+    -moz-border-radius-topright: 6px;
+    border-top-right-radius: 6px;
+    margin-right: -1px;
+    background-position: -1px;
+    color: #ffffff!important;
+    font-size: 17px!important;
+    padding-left: 52px!important;
+    text-shadow: none!important;
+    font-weight: bold;
+    padding-right: 0px;
+    border-left: none;
+    height: 52px;
+    background-repeat: no-repeat;
+    background-position: 0px 0;
+    line-height: 40px!important;
+    -webkit-transition: width 0.25s;
+    -moz-transition: width 0.25s;
+    -o-transition: width 0.25s;
+    transition: width 0.25s;
+    text-overflow: clip;
+    overflow: hidden;
+}
+
+.drwmsg-nav_ul.restartbutton {
+    background-image: url(img/replay_button.png);
+    width: 150px!important;
+    //margin-top: -1px!important;
+    margin-right: -1px;
+    background-position: -1px;
+    color: #ffffff!important;
+    font-size: 17px!important;
+    padding-left: 52px!important;
+    text-shadow: none!important;
+    font-weight: bold;
+    padding-right: 0px;
+    border-left: none;
+    height: 52px;
+    background-repeat: no-repeat;
+    background-position: 0px 0;
+    line-height: 40px!important;
+    -webkit-transition: width 0.25s;
+    -moz-transition: width 0.25s;
+    -o-transition: width 0.25s;
+    transition: width 0.25s;
+    text-overflow: clip;
+    overflow: hidden;
+}
+
+.drwmsg-nav_ul.checkbutton.checkbutton-open{
+    width: 200px!important;
+}
+
+.drwmsg-nav_ul.checkbutton:hover, .drwmsg-nav_ul.solutionbutton:hover, .drwmsg-nav_ul.restartbutton:hover, .drwmsg-nav_ul.nextbutton:hover{
+    color: #FFE60F!important;
+}
+
+.drwmsg-check-box {
+    height: 45px;
+    margin-top: -46px!important;
+    box-sizing: border-box;
+    -webkit-border-top-right-radius: 6px;
+    -moz-border-radius-topright: 6px;
+    border-top-right-radius: 6px;
+    margin-right: 0px;
+    overflow:hidden;
+}
+
+.drwmsg-game-header {
+    margin-top: 5px;
+}
+
+.drwmsg-preload_layer {
+    margin-top: 5px;
+}
+
+.drwmsg-game-header, .drwmsg-player-header-bg, .drwmsg-gamein {
+    border-style: none!important;
+}
+
+.drwmsg-preload_layer{
+    width: 100%!important;
+    top:0!important;
+    left:0!important;
+    margin-top: 0!important;
+    height: 100%!important;
+}
+
+.drwmsg-gamein{
+    position:relative;
+}

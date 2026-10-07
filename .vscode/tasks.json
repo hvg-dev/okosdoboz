@@ -1,0 +1,19 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Parcel shell dev",
+      "type": "shell",
+      "command": "npm run dev --prefix shell",
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "Parcel shell build",
+      "type": "shell",
+      "command": "npm run build --prefix shell",
+      "group": "build",
+      "problemMatcher": []
+    }
+  ]
+}

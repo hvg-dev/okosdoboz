@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: okosdoboz-shell
+  labels:
+    app.kubernetes.io/name: okosdoboz-shell
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: okosdoboz-shell
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+      protocol: TCP

@@ -1,0 +1,12 @@
+.git
+.vscode
+**/node_modules
+**/.parcel-cache
+**/.parcel-dev
+**/dist
+**/test-results
+**/playwright-report
+**/*.log
+Dockerfile
+.dockerignore
+*.md

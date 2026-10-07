@@ -1,0 +1,200 @@
+.carco-flex-container {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+    display: -webkit-box;
+    display: -moz-box;
+    display: -ms-flexbox;
+    display: -webkit-flex;
+    display: flex;
+    flex-flow: row wrap;
+    -webkit-flex-flow: row wrap;
+    justify-content: space-around;
+    -webkit-align-content: center;
+    -webkit-align-items: center;
+    align-items: center;
+    -webkit-justify-content: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: normal;
+    font-style: normal;
+    font-family: Arial, sans-serif;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.carco-flex-item {
+    min-width: 100%;
+    height: auto;
+    -moz-box-flex: 1;
+    flex: 1;
+    padding:5px;
+    display:inline-block;
+    min-width: 220px\9;
+}
+
+.carco-editor-item-title {
+    font-size: 10px;
+    font-weight: normal;
+    font-style: normal;
+    font-family: Arial, sans-serif;
+    color: #cccccc;
+}
+
+.carco-input-text {
+    border: 1px solid transparent;
+    color: #ffffff;
+    font-family: inherit;
+    outline: none;
+    width: 100%;
+    background: #009cff;
+    font-size: 10px;
+    padding: 2px 5px 2px 5px;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+}
+
+.carco-input-text-hide {
+    margin-top: -20px;
+    opacity: 0;
+}
+
+.carco-button {
+    color: #ffffff;
+    cursor: pointer;
+    padding: 3px 5px 3px 5px;
+    text-align: center;
+}
+
+.carco-button-active {
+    background: rgba(0, 0, 0, 0.2);
+    background: #0080D1\9;
+    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=80)";
+}
+
+.carco-flex-item-button {
+    display:inline-block;
+    background: #009cff;
+    height: auto;
+    flex: 1;
+    -moz-box-flex: 1;
+    min-width: 110px\9;
+}
+
+.carco-button-single {
+    display: block;
+}
+
+.carco-slider {
+    color: #ffffff;
+    cursor: pointer;
+    padding: 3px 5px 3px 5px;
+    text-align: center;
+    width: 30px;
+    margin-left: -15px;
+    background: rgba(0, 0, 0, 0.2);
+    position: relative;
+    background: #0080D1\9;
+    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=80)";
+}
+
+.carco-sliderbar {
+    background: #009cff;
+    height: auto;
+    width: 100%;
+    flex: 1;
+    position:relative;
+}
+
+.carco-item-tools-border {
+    border-style: dotted;
+    border-width: 1.5px;
+    box-sizing: border-box;
+    border-color: rgba(0, 0, 0, 0.2);
+}
+
+.carco-item-tools-button {
+    z-index:500000000000000000000000000;
+    background: rgba(0, 200, 255, 0.8);
+}
+
+.carco-layer {
+    padding-left: 5px;
+    padding-bottom: 10px;
+    padding-top: 5px;
+    display: block;
+    background: rgba(167, 167, 167, 0.16);
+    margin-left: 0px;
+    padding-right: 5px;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+    border-style: solid;
+    border-width: 1px;
+    border-color: rgba(222, 222, 222, 0.1);
+    margin-bottom: 5px;
+}
+
+.carco-layer-name {
+    font-weight: bold;
+    font-size: 12px;
+    color: rgb(6, 215, 255);
+    padding: 5px;
+}
+
+.cp-slider.cp-hslhue.cp-transparency span, .cp-slider.cp-hslsaturation.cp-transparency span, .cp-slider.cp-hsllightness.cp-transparency span {
+    font-size: 0.1px;
+    text-align: left;
+}
+
+.popover-content {
+    padding: 5px;
+    padding-top: 10px;
+}
+
+.arrow:after {
+    display: none!important;
+}
+
+.popover.fade.bottom.in {
+     margin-top: 0px;
+     border-radius: 0px;
+     box-shadow: none;
+     background: rgb(116, 116, 116);
+}
+
+.popover.fade.bottom {
+    margin-top: 0px;
+    border-radius: 0px;
+    box-shadow: none;
+    background: rgb(116, 116, 116);
+}
+
+.cp-container .cp-slider, .cp-container .cp-preview {
+    border: none;
+}
+
+.cp-container .cp-marker {
+    position: absolute;
+    display: block;
+    width: 2px;
+    height: 26px;
+    margin-left: 0px;
+    top: 0px;
+    background: rgb(6, 185, 255);
+}
+
+.popover.bottom .arrow {
+    display:none!important;
+}
+
+.MathJax_Display{
+    display: inline!important;
+}

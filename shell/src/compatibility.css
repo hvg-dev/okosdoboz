@@ -1,0 +1,26 @@
+body.parcel-lesson-shell { min-width: 0; height: auto; max-height: none; overflow: auto; }
+#odPlayer { width: 100%; height: auto; }
+#odPlayer > .drwmsg-player { position: relative; height: auto; max-height: none; }
+#odPlayer .drwmsg-flex-container { height: auto; }
+#odPlayer .drwmsg-flex-container > .drwmsg { display: block; max-height: none; }
+#odPlayer .drwmsg-player-header { height: auto; min-height: 45px; position: relative; }
+#odPlayer .drwmsg-player-header-bg { position: absolute; inset: 0; height: 100%; }
+#odPlayer .drwmsg-player-header-content { position: relative; margin-top: 0; display: flex; align-items: center; flex-wrap: wrap; min-height: 45px; }
+#odPlayer .drwmsg-game-header { height: auto; min-height: 46px; display: flex; flex-wrap: wrap; align-items: center; }
+#odPlayer .drwmsg-game-title-box { flex: 1 1 200px; width: auto; min-width: 0; height: auto; padding: 8px 12px; }
+#odPlayer .drwmsg-title-spacer { position: static; display: block; width: auto !important; height: auto; }
+#odPlayer .drwmsg-game-title { display: block; line-height: 1.35; font-size: 16px !important; }
+#odPlayer .drwmsg-check-box { display: flex !important; flex-wrap: wrap; justify-content: flex-end; align-items: center; float: none; max-width: 100%; min-width: 0; height: auto; margin-top: 0; }
+#odPlayer .drwmsg-check-box > .drwmsg-nav_ul { float: none; margin: 0; }
+#odPlayer .drwmsg-nav_ul_disable { display: block !important; color: #7c8982 !important; pointer-events: none; }
+#odPlayer .drwmsg-check-box > [style*="display: none"] { display: none !important; }
+#odPlayer .drwmsg-game-title { white-space: normal; }
+#odPlayer .drwmsg-layers { display: none; }
+#odPlayer .drwmsg-endscreen { overflow: auto; max-width: 100%; }
+#odPlayer .drwmsg-preload_layer { position: absolute; }
+@media (max-width: 600px) {
+  #odPlayer .drwmsg-player-title { padding: 8px 10px; font-size: 17px; }
+  #odPlayer .drwmsg-game-title-box { flex-basis: 100%; }
+  #odPlayer .drwmsg-check-box { width: 100%; justify-content: flex-start; }
+  #odPlayer .drwmsg-nav_ul { font-size: 13px; min-width: 64px; padding: 0 8px; }
+}

@@ -1,0 +1,6 @@
+{
+  "lessonsPrefix": "/lessons",
+  "defaultLessonId": "1710",
+  "supportedLessonIds": ["1710"],
+  "loadTimeoutMs": 30000
+}
