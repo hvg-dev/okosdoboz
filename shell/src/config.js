@@ -47,7 +47,7 @@ export function lessonUrls(config, lessonId, origin) {
     bootstrap: new URL('lib/okosdoboz.js', base).href,
     userConfig: new URL('lib/odconfig_user.js', base).href,
     index: new URL(`${lessonId}/${lessonId}/index.js`, base).href,
-    library: new URL(`${lessonId}/lib/`, base).href,
+    library: new URL(`${lessonId}/lib/`, base).pathname,
     taskRoot: new URL(`${lessonId}/`, base).href
   };
 }

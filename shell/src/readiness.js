@@ -3,11 +3,15 @@ export function waitForTask(root, lessonId, signal) {
     let frame;
     let stable = 0;
     let previous = '';
-    const observer = new MutationObserver(check);
-    const cleanup = () => { observer.disconnect(); cancelAnimationFrame(frame); signal.removeEventListener('abort', abort); };
+    const observer = new MutationObserver(schedule);
+    const cleanup = () => { observer.disconnect(); cancelAnimationFrame(frame); clearTimeout(frame); signal.removeEventListener('abort', abort); };
     const abort = () => { cleanup(); reject(signal.reason); };
+    function schedule() {
+      if (frame !== undefined) return;
+      frame = document.hidden ? setTimeout(check, 100) : requestAnimationFrame(check);
+    }
     function check() {
-      cancelAnimationFrame(frame);
+      frame = undefined;
       const state = root.carco.paramsdata;
       const preload = root.carco.playeritems.preload_layer;
       const rect = root.getBoundingClientRect();
@@ -16,7 +20,7 @@ export function waitForTask(root, lessonId, signal) {
       stable = valid && geometry === previous ? stable + 1 : 0;
       previous = geometry;
       if (valid && stable >= 2) { cleanup(); resolve(root); }
-      else frame = requestAnimationFrame(check);
+      else schedule();
     }
     signal.addEventListener('abort', abort, { once: true });
     observer.observe(root.parentElement, { attributes: true, childList: true, subtree: true });

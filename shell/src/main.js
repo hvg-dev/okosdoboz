@@ -1,24 +1,43 @@
-import { createIcons, Maximize } from 'lucide';
+import { createIcons, Maximize, RotateCw } from 'lucide';
 import { validateConfig, selectLesson, lessonUrls } from './config.js';
 import { startLesson } from './lesson-loader.js';
 import { waitForTask } from './readiness.js';
 import { observeLayout } from './layout.js';
+import { installFullscreen } from './fullscreen.js';
 
-createIcons({ icons: { Maximize } });
+createIcons({ icons: { Maximize, RotateCw } });
 const status = document.getElementById('status');
 const retry = document.getElementById('retry');
 const experience = document.getElementById('experience');
+const fullscreenButton = document.getElementById('fullscreen');
+const rotatePrompt = document.getElementById('rotate-prompt');
+const phonePortrait = window.matchMedia('(orientation: portrait) and (max-width: 600px)');
+function updateOrientation() {
+  rotatePrompt.hidden = !phonePortrait.matches;
+  experience.inert = phonePortrait.matches;
+}
+phonePortrait.addEventListener('change', updateOrientation);
+window.addEventListener('resize', updateOrientation);
+let viewport = `${window.innerWidth}:${window.innerHeight}`;
+function refreshViewport() {
+  const next = `${window.innerWidth}:${window.innerHeight}`;
+  if (next !== viewport) {
+    viewport = next;
+    updateOrientation();
+    window.dispatchEvent(new Event('resize'));
+  }
+}
+document.addEventListener('visibilitychange', refreshViewport);
+const viewportTimer = setInterval(() => { if (document.hidden) refreshViewport(); }, 500);
+window.addEventListener('pagehide', () => clearInterval(viewportTimer), { once: true });
+updateOrientation();
 retry.addEventListener('click', () => location.reload());
-document.getElementById('fullscreen').addEventListener('click', async () => {
-  try {
-    if (document.fullscreenElement) await document.exitFullscreen();
-    else if (experience.requestFullscreen) await experience.requestFullscreen();
-    else experience.classList.toggle('expanded');
-  } catch { experience.classList.toggle('expanded'); }
-  window.dispatchEvent(new Event('resize'));
+installFullscreen({
+  document,
+  button: fullscreenButton,
+  notice: document.getElementById('fullscreen-notice'),
+  onResize: () => window.dispatchEvent(new Event('resize'))
 });
-document.addEventListener('fullscreenchange', () => window.dispatchEvent(new Event('resize')));
-document.addEventListener('keydown', event => { if (event.key === 'Escape') experience.classList.remove('expanded'); });
 
 async function main() {
   const controller = new AbortController();
@@ -57,6 +76,8 @@ async function main() {
       compatibility.onerror = () => { controller.signal.removeEventListener('abort', abort); reject(new Error('A keret stílusa nem elérhető.')); };
       if (controller.signal.aborted) abort();
     });
+    const controls = document.getElementById('controls');
+    controls.append(root.carco.playeritems.playerheader, root.carco.playeritems.gametitle_box.parentElement);
     cleanup = observeLayout(root);
     onState('task-loading');
     await waitForTask(root, lessonId, controller.signal);

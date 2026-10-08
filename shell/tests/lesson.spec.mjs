@@ -11,8 +11,8 @@ test('same-document feladat, reszponzív kezelősáv és assetek', async ({ page
   await expect(page.locator('iframe')).toHaveCount(0);
   expect(await page.evaluate(() => String(window.drwmsg.carco.paramsdata.system.currentgame))).toBe('1710');
   expect(await page.evaluate(() => window.jQuery.fn.jquery)).toBe('2.0.3');
-  for (const width of [320, 390, 750, 768, 1024, 1440]) {
-    await page.setViewportSize({ width, height: 900 });
+  for (const width of [750, 844, 1024, 1440]) {
+    await page.setViewportSize({ width, height: 390 });
     await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     await expect(page.locator('.checkbutton')).toBeVisible();
     await expect(page.locator('.solutionbutton')).toBeVisible();
@@ -20,7 +20,8 @@ test('same-document feladat, reszponzív kezelősáv és assetek', async ({ page
       const root = window.drwmsg;
       const player = root.carco.playeritems.player.getBoundingClientRect();
       const game = root.parentElement.getBoundingClientRect();
-      return game.bottom <= player.bottom + 2;
+      const rail = document.querySelector('#controls').getBoundingClientRect();
+      return game.bottom <= player.bottom + 2 && game.right <= rail.left + 1 && game.bottom <= innerHeight;
     })).toBe(true);
   }
   const track = await page.evaluate(() => window.drwmsg.carco.paramsdata.system.currenttrack);
@@ -28,7 +29,7 @@ test('same-document feladat, reszponzív kezelősáv és assetek', async ({ page
   await expect.poll(() => page.evaluate(() => Math.round(window.drwmsg.parentElement.offsetWidth))).toBeLessThanOrEqual(460);
   expect(await page.evaluate(() => window.drwmsg.carco.paramsdata.system.currenttrack)).toBe(track);
   await page.locator('.lesson-container').evaluate(item => { item.style.width = ''; });
-  await page.setViewportSize({ width: 390, height: 844 });
+  await page.setViewportSize({ width: 844, height: 390 });
   await page.getByText('Info', { exact: true }).click();
   await expect.poll(() => page.evaluate(() => getComputedStyle(window.drwmsg.carco.playeritems.infoscreen).display)).not.toBe('none');
   expect(failed).toEqual([]);
@@ -67,10 +68,18 @@ test('választás, ellenőrzés, megoldás és pályaváltás', async ({ page })
   await expect.poll(() => page.evaluate(() => window.drwmsg.carco.playeritems.preload_layer.style.display)).toBe('none');
 });
 
-test('mobilos képernyő és resize stabilitás', async ({ page }) => {
+test('portrait kérés, forgatás és állapotmegőrzés', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/');
   await expect(page.locator('body')).toHaveAttribute('data-state', 'ready');
+  await expect(page.locator('#rotate-prompt')).toBeVisible();
+  expect(await page.locator('#experience').evaluate(item => item.inert)).toBe(true);
+  const track = await page.evaluate(() => window.drwmsg.carco.paramsdata.system.currenttrack);
+  await page.screenshot({ path: 'test-results/portrait.png', fullPage: true });
+  await page.setViewportSize({ width: 844, height: 390 });
+  await expect(page.locator('#rotate-prompt')).toBeHidden();
+  expect(await page.locator('#experience').evaluate(item => item.inert)).toBe(false);
+  expect(await page.evaluate(() => window.drwmsg.carco.paramsdata.system.currenttrack)).toBe(track);
   await page.waitForTimeout(2000);
   const mutations = await page.evaluate(async () => {
     let count = 0;
@@ -82,6 +91,61 @@ test('mobilos képernyő és resize stabilitás', async ({ page }) => {
   });
   expect(mutations).toBeLessThan(100);
   await page.screenshot({ path: 'test-results/mobile.png', fullPage: true });
+});
+
+test('fullscreen a dokumentumra és API nélküli fallback', async ({ page }) => {
+  await page.setViewportSize({ width: 844, height: 390 });
+  await page.goto('/');
+  await expect(page.locator('body')).toHaveAttribute('data-state', 'ready');
+  await page.evaluate(() => {
+    document.documentElement.requestFullscreen = async function () {
+      document.body.dataset.fullscreenTarget = this === document.documentElement ? 'document' : 'other';
+    };
+  });
+  await page.locator('#fullscreen').click();
+  await expect(page.locator('body')).toHaveAttribute('data-fullscreen-target', 'document');
+  await page.evaluate(() => { document.documentElement.requestFullscreen = undefined; });
+  const widthBefore = await page.evaluate(() => window.drwmsg.getBoundingClientRect().width);
+  const trackBefore = await page.evaluate(() => window.drwmsg.carco.paramsdata.system.currenttrack);
+  await page.locator('#fullscreen').click();
+  await expect(page.locator('html')).toHaveClass(/expanded/);
+  await expect(page.locator('#fullscreen')).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('#fullscreen')).toHaveAttribute('aria-label', 'Vissza a vezérlőkhöz');
+  await expect.poll(() => page.evaluate(() => window.drwmsg.getBoundingClientRect().width)).toBeGreaterThan(widthBefore);
+  expect(await page.evaluate(() => window.drwmsg.carco.paramsdata.system.currenttrack)).toBe(trackBefore);
+  await page.keyboard.press('Escape');
+  await expect(page.locator('html')).not.toHaveClass(/expanded/);
+  await expect(page.locator('#fullscreen')).toHaveAttribute('aria-pressed', 'false');
+});
+
+test('magas eredménypanel mobilon is görgethető és a játék fölött marad', async ({ page }) => {
+  await page.setViewportSize({ width: 844, height: 390 });
+  await page.goto('/');
+  await expect(page.locator('body')).toHaveAttribute('data-state', 'ready');
+  await page.evaluate(() => {
+    const items = window.drwmsg.carco.playeritems;
+    items.endscreen_scores.textContent = Array.from({ length: 40 }, () => 'Eredmény\n').join('');
+    items.endscreen_scores.style.whiteSpace = 'pre-line';
+    items.endscreen.className = 'drwmsg-endscreen drwmsg-endtrans';
+    items.endscreen.style.width = '1000px';
+    items.endscreen.style.marginTop = '50px';
+    items.blacklayer.className = 'drwmsg-layer drwmsg-layer_trans';
+  });
+  expect(await page.evaluate(() => {
+    const panel = window.drwmsg.carco.playeritems.endscreen;
+    const rect = panel.getBoundingClientRect();
+    return rect.top >= 0 && rect.bottom <= innerHeight && rect.right <= document.getElementById('controls').getBoundingClientRect().left && panel.scrollHeight > panel.clientHeight;
+  })).toBe(true);
+  await page.locator('#odPlayer').getByText('Újra', { exact: true }).scrollIntoViewIfNeeded();
+  expect(await page.evaluate(() => {
+    const button = window.drwmsg.carco.playeritems.endscreen_restart;
+    const rect = button.getBoundingClientRect();
+    const target = document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2);
+    return rect.bottom <= innerHeight && button.contains(target);
+  })).toBe(true);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(page.locator('#rotate-prompt')).toBeVisible();
+  expect(await page.evaluate(() => document.getElementById('rotate-prompt').contains(document.elementFromPoint(innerWidth / 2, innerHeight / 2)))).toBe(true);
 });
 
 test('hibás query nem indít motort, hiányzó asset valódi 404', async ({ page, request }) => {

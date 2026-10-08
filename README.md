@@ -15,6 +15,14 @@ npm run dev --prefix shell
 
 A keret címe: **http://localhost:3000/?lesson=1710**. Másik port: `PORT=3100 npm run dev --prefix shell`. A belső Parcel-port alapértelmezésben a külső port + 1; `PARCEL_PORT` értékkel felülírható. Nincs iframe, és nincs SPA-feladatcsere.
 
+Telefonméretű álló nézetben (legfeljebb 600 px széles portrait viewport) a keret a telefon elfordítását kéri. A feladat betöltve marad, a háttérben lévő vezérlők ilyenkor nem kezelhetők; visszaforgatás nem indítja újra a pályát. A játéktér a viewport bal oldalán a lehető legnagyobb arányos méretet használja, a cím, instrukció, előrehaladás és eredeti vezérlők pedig a külön görgethető jobb oldali sávba kerülnek.
+
+A fullscreen gomb a teljes dokumentumra (`document.documentElement`) kéri a böngésző teljes képernyős módját, nem csak a feladatelemre. Standard és WebKit API-t is kezel; a gombbal ismét kiléphetsz. Ahol az API nem támogatott, letiltott, a böngésző megtagadja vagy a kérés elakad, nagyított játéknézetre vált: a jobb oldali vezérlősáv 64 px-re összecsukódik, így a játék több helyet kap. A jobb felső gomb megmarad, és visszaállítja a vezérlőket. API nélküli környezetben a gomb neve „Játék nagyítása”, nagyított állapotban „Vissza a vezérlőkhöz”; a képernyőolvasó a korlátozásról is kap jelzést. Ez nem natív fullscreen, és nem tudja elrejteni a Safari saját címsorát. Forgatás, fullscreen és méretváltozás közben a legacy feladat állapota megmarad.
+
+iPhone-on a natív teljes dokumentumos fullscreen támogatása böngésző-/iOS-verziófüggő. A nagyított fallbacket böngészőben, hiányzó API-val szimulálva ellenőriztük; valódi iPhone-on külön eszközteszt szükséges. A normál vezérlősávhoz vissza kell lépni válaszellenőrzés vagy pályaváltás előtt.
+
+Az eredmény- és információs panelek a viewporton belül maradnak, hosszabb tartalmuk külön görgethető. A legacy motornak gyökérhez viszonyított `lib` útvonalat adunk, így a HTTPS-címek régi normalizálója nem rontja el a helyes/hibás választ jelző ikonok URL-jét.
+
 ```sh
 npm run build --prefix shell
 npm test --prefix shell
@@ -23,7 +31,19 @@ PORT=3200 npm run preview --prefix shell
 
 Az `npm test` a kész build legacy hash-eit is ellenőrzi, ezért előtte szükséges a build. A preview címe ekkor http://localhost:3200/. A `shell/dist` statikusan is kiszolgálható.
 
-## Konténeres hosztolás
+## iPhone kezdőképernyős alkalmazás
+
+A keret webmanifesttel, 192/512 px-es alkalmazásikonokkal és 180 px-es Apple touch ikonnal rendelkezik. Az iPhone a kezdőképernyős ikonról indítva standalone módban, Safari-címsor nélkül nyithatja meg; az iOS státuszsávja és home indicatora ettől még megmaradhat. A keret kezeli a safe-area margókat.
+
+1. Nyisd meg Safariban a HTTPS-címet: https://okosdoboz-poc.staging-hvg.hu/.
+2. Válaszd a **Megosztás → Főképernyőhöz adás** műveletet. Ha az iOS felkínálja, legyen bekapcsolva a **Megnyitás webalkalmazásként** lehetőség.
+3. A létrejött **Okosdoboz** ikonról indítsd az alkalmazást, majd fordítsd fekvő helyzetbe a telefont.
+
+A Safari-lap fullscreen gombja nem tudja automatikusan telepíteni vagy standalone módba váltani az oldalt. A kezdőképernyős alkalmazásban a gomb a játéktér nagyítását és a vezérlők visszaállítását végzi. Az indítás a konfigurált alapértelmezett feladatot választja; a manifest `start_url` és `scope` értéke `./`.
+
+Ez **online standalone alkalmazás**, nem offline kiadás: nincs service worker és nincs feladatcache. Internetkapcsolat szükséges. A manifest/ikonok buildbe kerülését automatizált teszt ellenőrzi; a tényleges iPhone-os telepítés és címsor nélküli indítás valódi eszközön ellenőrzendő. A generált ikonok újrakészítése: `node shell/scripts/generate-icons.mjs`.
+
+## Docker hosztolás
 
 A gyökérben található [Dockerfile](Dockerfile) Node.js 22 alatt elkészíti a production buildet és futtatja a Node-teszteket. A végső image csak a statikus outputot és a nem root felhasználóval futó Nginx-kiszolgálót tartalmazza; nincs benne Parcel fejlesztői szerver vagy Node runtime.
 

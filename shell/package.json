@@ -27,6 +27,8 @@
     "mathjax": "^2.7.9"
   },
   "devDependencies": {
+    "@parcel/packager-raw-url": "^2.16.4",
+    "@parcel/transformer-webmanifest": "^2.16.4",
     "@playwright/test": "^1.56.0",
     "parcel": "^2.15.0"
   }

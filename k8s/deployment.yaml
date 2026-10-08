@@ -25,7 +25,7 @@ spec:
       containers:
         - name: shell
           image: cr.hvg.hu/os/okosdoboz-shell:poc
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           ports:
             - name: http
               containerPort: 8080

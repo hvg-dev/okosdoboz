@@ -2,20 +2,34 @@
 <html lang="hu">
   <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#137f60">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Okosdoboz">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <link rel="manifest" href="app.webmanifest">
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/icon-180.png">
     <title>Okosdoboz | Feladat</title>
     <link rel="stylesheet" href="src/shell.css">
     <script type="module" src="src/main.js"></script>
   </head>
   <body class="parcel-lesson-shell">
-    <header class="shell-header">
-      <a class="shell-brand" href="./">Okosdoboz<span>Feladatok</span></a>
-      <button id="fullscreen" class="icon-button" type="button" title="Teljes képernyő" aria-label="Teljes képernyő"><i data-lucide="maximize"></i></button>
-    </header>
     <main id="experience">
-      <div id="status" role="status" aria-live="polite">Feladat betöltése...</div>
-      <button id="retry" type="button" hidden>Újratöltés</button>
       <div class="lesson-container"><div id="odPlayer" class="odPlayer" playersize="embedded"></div></div>
+      <aside id="controls" aria-label="Feladat vezérlői">
+        <header class="shell-header">
+          <a class="shell-brand" href="./">Okosdoboz</a>
+          <button id="fullscreen" class="icon-button" type="button" title="Teljes képernyő" aria-label="Teljes képernyő" aria-pressed="false"><i data-lucide="maximize"></i></button>
+        </header>
+        <div id="fullscreen-notice" role="status" aria-live="polite" hidden></div>
+        <div id="status" role="status" aria-live="polite">Feladat betöltése...</div>
+        <button id="retry" type="button" hidden>Újratöltés</button>
+      </aside>
     </main>
+    <div id="rotate-prompt" role="dialog" aria-modal="true" aria-labelledby="rotate-title" hidden>
+      <i data-lucide="rotate-cw" aria-hidden="true"></i>
+      <h1 id="rotate-title">Fordítsd el a telefont!</h1>
+      <p>A feladatot fekvő helyzetben tudod megoldani.</p>
+    </div>
   </body>
 </html>

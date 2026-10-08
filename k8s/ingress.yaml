@@ -1,0 +1,22 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: okosdoboz-shell
+  labels:
+    app.kubernetes.io/name: okosdoboz-shell
+  annotations:
+    konghq.com/protocols: "http"
+    konghq.com/strip-path: "false"
+spec:
+  ingressClassName: kong
+  rules:
+    - host: okosdoboz-poc.staging-hvg.hu
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: okosdoboz-shell
+                port:
+                  number: 80

@@ -13,8 +13,15 @@ test('prefix normalizálás és új feladatstruktúra', () => {
   assert.equal(selectLesson(config, ''), '1710');
   const urls = lessonUrls(config, '1710', origin);
   assert.equal(urls.index, origin + '/lessons/1710/1710/index.js');
-  assert.equal(urls.library, origin + '/lessons/1710/lib/');
-  assert.equal(new URL('../tracksjs/1710_game.js', urls.library).href, origin + '/lessons/1710/tracksjs/1710_game.js');
+  assert.equal(urls.library, '/lessons/1710/lib/');
+  assert.equal(new URL('../tracksjs/1710_game.js', new URL(urls.library, origin)).href, origin + '/lessons/1710/tracksjs/1710_game.js');
+});
+
+test('HTTPS library útvonal nem kerül a legacy protokollnormalizálóba', () => {
+  const httpsOrigin = 'https://okosdoboz-poc.staging-hvg.hu';
+  const urls = lessonUrls(validateConfig(raw, httpsOrigin), '1710', httpsOrigin);
+  assert.equal(urls.library, '/lessons/1710/lib/');
+  assert.equal(new URL(urls.library + 'default_images/good.png', httpsOrigin).href, httpsOrigin + '/lessons/1710/lib/default_images/good.png');
 });
 
 test('tiltott prefixek és motorparaméterek', () => {
