@@ -11,22 +11,24 @@
     }
   },
   "engines": {
-    "node": ">=22"
+    "node": "24.x"
   },
   "scripts": {
+    "start": "node scripts/production-server.mjs",
     "dev": "node scripts/server.mjs",
     "build": "node scripts/build.mjs",
+    "heroku-postbuild": "npm test",
     "preview": "node scripts/server.mjs --preview",
     "test": "node --test tests/*.test.mjs",
     "test:e2e": "playwright test"
   },
   "dependencies": {
-    "express": "^5.1.0",
-    "http-proxy": "^1.18.1",
-    "lucide": "^0.468.0",
-    "mathjax": "^2.7.9"
+    "express": "^5.1.0"
   },
   "devDependencies": {
+    "http-proxy": "^1.18.1",
+    "lucide": "^0.468.0",
+    "mathjax": "^2.7.9",
     "@parcel/packager-raw-url": "^2.16.4",
     "@parcel/transformer-webmanifest": "^2.16.4",
     "@playwright/test": "^1.56.0",
