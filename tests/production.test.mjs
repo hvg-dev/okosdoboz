@@ -1,0 +1,51 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { mkdtemp, mkdir, writeFile, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
+import { createServer } from 'node:http';
+import { createProductionApp } from '../scripts/production-app.mjs';
+
+test('production HTTP: MIME, cache, headers, prefix, 404 és metódusok', async context => {
+  const directory = await mkdtemp(path.join(tmpdir(), '4kids-http-'));
+  context.after(() => rm(directory, { recursive: true, force: true }));
+  await mkdir(path.join(directory, 'content/lessons/1710/1710'), { recursive: true });
+  await writeFile(path.join(directory, 'shell-config.json'), JSON.stringify({ lessonsPrefix: '/content/lessons', defaultLessonId: '1710', supportedLessonIds: ['1710'], loadTimeoutMs: 30000 }));
+  for (const [name, body] of Object.entries({ 'index.html': '<!doctype html><title>Task</title>', 'app.123456ab.js': 'const task=1;', 'app.webmanifest': '{"display":"standalone"}', 'content/lessons/1710/1710/index.js': 'var task=1710;' })) await writeFile(path.join(directory, name), body);
+  const server = createServer(await createProductionApp({ directory }));
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+  context.after(() => new Promise(resolve => { server.close(resolve); server.closeAllConnections(); }));
+  const base = `http://127.0.0.1:${server.address().port}`;
+  const html = await fetch(base + '/?lesson=1710');
+  assert.equal(html.status, 200);
+  assert.match(html.headers.get('content-type'), /text\/html/);
+  assert.equal(html.headers.get('x-powered-by'), null);
+  assert.equal(html.headers.get('x-content-type-options'), 'nosniff');
+  assert.equal(html.headers.get('referrer-policy'), 'strict-origin-when-cross-origin');
+  assert.equal(html.headers.get('cache-control'), 'no-cache');
+  const config = await fetch(base + '/shell-config.json');
+  assert.equal(config.headers.get('cache-control'), 'no-store');
+  assert.equal((await config.json()).lessonsPrefix, '/content/lessons/');
+  const bundle = await fetch(base + '/app.123456ab.js', { method: 'HEAD' });
+  assert.match(bundle.headers.get('cache-control'), /immutable/);
+  assert.equal(await bundle.text(), '');
+  const lesson = await fetch(base + '/content/lessons/1710/1710/index.js');
+  assert.equal(lesson.status, 200);
+  assert.equal(lesson.headers.get('cache-control'), 'no-cache');
+  assert.match((await fetch(base + '/app.webmanifest')).headers.get('content-type'), /manifest\+json/);
+  assert.equal((await fetch(base + '/content/lessons/missing.js')).status, 404);
+  assert.equal((await fetch(base + '/missing')).status, 404);
+  assert.equal((await fetch(base + '/.env')).status, 403);
+  assert.equal((await fetch(base + '/', { method: 'POST' })).status, 405);
+});
+
+test('hiányos vagy hibás builddel nem indul production alkalmazás', async context => {
+  const directory = await mkdtemp(path.join(tmpdir(), '4kids-invalid-'));
+  context.after(() => rm(directory, { recursive: true, force: true }));
+  await assert.rejects(createProductionApp({ directory }), /ENOENT/);
+  await writeFile(path.join(directory, 'shell-config.json'), '{invalid');
+  await assert.rejects(createProductionApp({ directory }), SyntaxError);
+  await writeFile(path.join(directory, 'shell-config.json'), JSON.stringify({ lessonsPrefix: '/lessons', defaultLessonId: '1710', supportedLessonIds: ['1710'], loadTimeoutMs: 30000 }));
+  await writeFile(path.join(directory, 'index.html'), '<title>Task</title>');
+  await assert.rejects(createProductionApp({ directory }), /ENOENT/);
+});

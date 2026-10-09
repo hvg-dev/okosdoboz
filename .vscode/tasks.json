@@ -4,14 +4,14 @@
     {
       "label": "Parcel shell dev",
       "type": "shell",
-      "command": "npm run dev --prefix shell",
+      "command": "npm run dev",
       "isBackground": true,
       "problemMatcher": []
     },
     {
       "label": "Parcel shell build",
       "type": "shell",
-      "command": "npm run build --prefix shell",
+      "command": "npm run build",
       "group": "build",
       "problemMatcher": []
     }

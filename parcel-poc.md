@@ -2,7 +2,7 @@
 
 ## Állapot és cél
 
-Ez a dokumentum az első POC specifikációját és a megvalósítás állapotát tartalmazza. **Az első működő keret elkészült.** A futtatási parancsok és ellenőrzési eredmények a [README.md](README.md) elején találhatók. A további fejezetekben megmaradó tervezett lépések nem tekinthetők automatikusan teljesítettnek.
+Ez a dokumentum a jelenlegi POC architektúráját és fennmaradó ellenőrzési feladatait tartalmazza. A keret implementált; a futtatási parancsok a [README.md](README.md) dokumentumban szerepelnek. A tesztterv nem jelenti minden eszköz és feladattípus igazolt támogatását.
 
 ## Megvalósult szerkezet és eltérések
 
@@ -15,35 +15,43 @@ lessons/
     1710/
     tracksjs/
     images_ms/
-shell/
-  index.html
-  package.json
-  package-lock.json
-  public/shell-config.json
-  src/config.js
-  src/lesson-loader.js
-  src/readiness.js
-  src/layout.js
-  src/main.js
-  src/shell.css
-  src/compatibility.css
-  scripts/assets.mjs
-  scripts/build.mjs
-  scripts/server.mjs
-  tests/
-  playwright.config.mjs
+index.html
+package.json
+package-lock.json
+app.webmanifest
+assets/
+public/shell-config.json
+src/config.js
+src/lesson-loader.js
+src/readiness.js
+src/layout.js
+src/main.js
+src/fullscreen.js
+src/shell.css
+src/compatibility.css
+scripts/assets.mjs
+scripts/build.mjs
+scripts/server.mjs
+scripts/production-app.mjs
+scripts/production-server.mjs
+scripts/generate-icons.mjs
+Procfile
+project.toml
+tests/
+playwright.config.mjs
 ```
 
 A következő specifikációs részleteket ez a szerződés pontosítja:
 
 - A közös forrás `lessons/lib/`, a feladat belépőscriptje `/lessons/1710/1710/index.js`.
 - A `/lessons/1710/lib/` virtuális útvonal a közös könyvtárra mutat. A motor ezen keresztül számolja a feladatonkénti `tracksjs` és `images_ms` helyét, forrásmódosítás nélkül. Statikus buildben ezt feladatonként generált másolat biztosítja.
-- A konfigurációvalidáció és URL-képzés egy kis modulban van; az indítás és fullscreen a `main.js` része. A dev és preview ugyanazt a kiszolgálómodult használja.
+- A konfigurációvalidáció és URL-képzés a `src/config.js`, a fullscreen-kezelés a `src/fullscreen.js` része; a `main.js` kapcsolja össze őket. A dev és preview a `scripts/server.mjs` modult használja, a production külön szerver.
+- Éles futtatáshoz külön `scripts/production-app.mjs` és `scripts/production-server.mjs` készült. Az `npm start` csak a kész buildet szolgálja ki Expressből, Parcel és Nginx nélkül. A build `pack build okosdoboz --builder heroku/builder:24` paranccsal készül, Node.js 24-et és a `Procfile` web folyamatát használva. A Kubernetes portja továbbra is 8080; a részletes indítási, buildpack-ellenőrzési és cache-szerződés a README-ben szerepel.
 - A forrásból hiányzó MathJax fájlokat a kompatibilis 2.7.9-es npm-csomag pótolja; az ismert ReDoS-kockázatot a README dokumentálja. Nem történt legacy függőségfrissítés.
 - A dev és preview gyökérútvonalú keretet szolgál ki. Külön keret-almappás telepítés még nem implementált; az assetprefix alkönyvtáras értéke viszont böngészőben ellenőrzött.
-- A build, öt Node-teszt és az integrált böngészős POC-próbák sikeresek. A teljes CLI Playwright-suite Linux rendszerfüggőségek miatt blokkolt; a teljes pálya-/touch-/fullscreen mátrix még hátralévő ellenőrzés.
+- A tényleges Heroku pack-build és 16 Node-teszt sikeres; read-only, nem root image-indítás és HTTP smoke teszt is történt. Hat Playwright-teszt van a forrásban, a teljes CLI-suite futása a korábbi környezetben hiányzó Linux-függőségek miatt nem igazolt. Korábbi integrált böngészős próbában a 1710 mind a hat pályája végigjátszható volt; valódi mobil/iPhone és további feladattípusok vizsgálata még szükséges.
 
-Az alábbi eredeti részletes terv modul- és ütemezési listája a további fejlesztési irányokat is tartalmazza; az implementált állapotot a fenti lista és a README rögzíti.
+Az alábbi fejezetek az implementált viselkedést írják le; a külön jelzett jövőbeli lehetőségek még nincsenek a kódban.
 
 A cél egy Parcel 2 alapú, reszponzív keret, amely azonos originről betölt egy meglévő Okosdoboz-feladatot a saját dokumentumába, iframe nélkül. Egy teljes oldalbetöltés egy aktív feladatot jelenít meg. Másik feladatra teljes oldalnavigációval váltunk; a motoron belüli pályaváltás megmarad.
 
@@ -75,47 +83,46 @@ A konfiguráció a bootstrap `lib` útvonalából számítja az assetgyökeret: 
 
 ## Könyvtárstruktúra
 
-A meglévő források tartalma változatlan, helyük a kért szerkezetre módosult. A keret a `shell/` könyvtárban található; az alábbi modulfelbontás egy része további tervezett finomítás:
+A legacy források a `lessons/` alatt maradnak. A keret teljes tartalma a repository gyökerébe került; minden npm-parancs innen fut:
 
 ```text
 4kids/
   README.md
-  parce-poc.md
+  parcel-poc.md
+  Procfile
+  project.toml
   lessons/
     lib/                        eredeti motor és függőségek
     1710/
       1710/                     eredeti feladatbelépő és XML-ek
       tracksjs/                 feladatadatok
       images_ms/                feladatképek
-  shell/                        új keret
-    index.html
-    package.json
-    package-lock.json
-    playwright.config.mjs
-    public/
-      shell-config.json
-    src/
-      main.js
-      config.js
-      urls.js
-      lesson-loader.js
-      readiness.js
-      layout.js
-      fullscreen.js
-      shell.css
-      compatibility.css
-    scripts/
-      dev-server.mjs
-      build.mjs
-      preview-server.mjs
-      sync-lessons.mjs
-    tests/
-      config.test.mjs
-      urls.test.mjs
-      loader.test.mjs
-      packaging.test.mjs
-      lesson.spec.mjs
-    dist/                       generált, nem verziózott
+  index.html
+  package.json
+  package-lock.json
+  app.webmanifest
+  playwright.config.mjs
+  assets/
+  public/
+    shell-config.json
+  src/
+    main.js
+    config.js
+    lesson-loader.js
+    readiness.js
+    layout.js
+    fullscreen.js
+    shell.css
+    compatibility.css
+  scripts/
+    assets.mjs
+    build.mjs
+    server.mjs
+    production-app.mjs
+    production-server.mjs
+    generate-icons.mjs
+  tests/
+  dist/                         generált, nem verziózott
 ```
 
 A generált `dist`, `.parcel-cache`, `node_modules`, `test-results` és `playwright-report` könyvtárak nem kerülnek Gitbe. A forrásokat nem költöztetjük át, és nem hozunk létre kézzel karbantartott legacy másolatot.
@@ -128,7 +135,7 @@ Az alapértelmezett `lessonsPrefix` értéke `/lessons`. Példa ugyanazon origin
 /?lesson=1710                       az új keret a kiválasztott feladattal
 /shell-config.json                  a keret konfigurációja
 /lessons/1710/1710/index.js          a feladat azonosítójának scriptje
-/lessons/1710/1710/index.html        eredeti, önálló kontrolloldal
+/lessons/1710/1710/index.html        megőrzött eredeti HTML (nem keretbelépő)
 /lessons/lib/okosdoboz.js            bootstrap
 /lessons/lib/odconfig_user.js        közös felhasználói konfiguráció
 /lessons/lib/...                    további változatlan motorfájlok
@@ -138,15 +145,15 @@ Az alapértelmezett `lessonsPrefix` értéke `/lessons`. Példa ugyanazon origin
 /lessons/1710/images_ms/half/...     félméretű képek
 ```
 
-**A `/lessons/1710` a feladat forráshelye, nem az új keret útvonala.** A keret csak az ottani `index.js` scriptet tölti be, nem a teljes `index.html` dokumentumot. A feladat eredeti HTML-je a kontrollméréshez elérhető marad.
+**A `/lessons/1710` a feladatcsomag helye, nem a keret route-ja.** A keret a `/lessons/1710/1710/index.js` scriptet tölti be, nem a teljes HTML-t. Az eredeti HTML fájl megmaradt, de relatív `../lib/` hivatkozása ezen az útvonalon nem a feladatonkénti virtuális `lib` aliasra mutat; önálló működését a jelenlegi keret nem garantálja.
 
-A prefix lehet például `/content/lessons` is. A keret saját telepítési helye ettől független: `/app/index.html?lesson=1710` is tölthet feladatot `/lessons/1710/` alól. A keret konfigurációját a dokumentum mappájából tölti, nem a Parcel bundle hash-elt URL-jéhez képest.
+A prefix lehet például `/content/lessons` is. Ez az assetek mountja, nem a keret telepítési base pathja. A jelenlegi dev/preview/production kiszolgálók a keretet az origin gyökerében szolgálják ki; `/app/` alatti kerettelepítés nincs implementálva. A kliens konfigurációs fetch a dokumentum mappájához viszonyított.
 
-Minden legacy URL-t egyetlen `urls.js` modul készít `URL` API-val. A bootstrap `lib` attribútuma a normalizált prefixből képzett, záró perjellel rendelkező könyvtár-URL. Nem használunk globális `<base>` elemet.
+A keret bootstrap-URL-jeit a [src/config.js](src/config.js) `lessonUrls()` függvénye készíti `URL` API-val; a további URL-eket a legacy motor számolja. A `lib` attribútum gyökérhez viszonyított pathname, például `/lessons/1710/lib/`, nem teljes HTTPS-URL, mert azt a motor képi normalizálója hibásan kezelné. Nincs külön `urls.js` modul vagy globális `<base>` elem.
 
 ## Konfiguráció
 
-A tervezett `shell/public/shell-config.json`:
+A [public/shell-config.json](public/shell-config.json) jelenlegi konfigurációja:
 
 ```json
 {
@@ -176,11 +183,10 @@ A JSON HTTP-hibája, hibás formátuma, ismeretlen kulcsa vagy hiányzó kötele
 
 ## Modulok és felelősségek
 
-| Tervezett modul | Feladat |
+| Implementált modul | Feladat |
 | --- | --- |
 | `main.js` | Egyszeri indítás, állapotok és magyar loading/error megjelenítés; a modulok összekapcsolása. |
-| `config.js` | Konfigurációs séma, manifest és feladatválasztás validációja. |
-| `urls.js` | Prefixnormalizálás, közös és feladatspecifikus asset-URL-ek. |
+| `config.js` | Konfiguráció, feladatválasztás, prefixnormalizálás és bootstrap URL-képzés. |
 | `lesson-loader.js` | Klasszikus scriptek szekvenciális betöltése, `loadProjects` és `createPlayer` egyszeri meghívása. |
 | `readiness.js` | A motor DOM- és adatállapotának megfigyelése, készültség és időkorlát. |
 | `layout.js` | Konténer- és kezelősávmérés, legacy resize-csatorna és magasságkorrekció. |
@@ -188,7 +194,7 @@ A JSON HTTP-hibája, hibás formátuma, ismeretlen kulcsa vagy hiányzó kötele
 | `shell.css` | A keret saját elrendezése és állapotai. |
 | `compatibility.css` | Kizárólag a keretoldalra szűkített legacy stílusfelülírások. |
 
-Tervezett adapterfelület: `startLesson({ config, lessonId, container, signal, onState })`, amely egy Promise-ban visszaadja a létrehozott gyökér referenciáját a készültségi feltételek teljesülésekor. Egy oldalon csak egy indítási Promise létezik. Ismételt azonos indítás ezt adja vissza; eltérő feladat újraindítási kísérlete hibát ad.
+A tényleges adapterfelület `startLesson(urls, lessonId, signal, onState)`. A Promise a `createPlayer()` után a gyökeret adja vissza, még nem a teljes pálya készültségét. Ezt külön `waitForTask(root, lessonId, signal)` ellenőrzi. Egy oldalon egy indítási Promise létezik; azonos ID ugyanazt kapja vissza, másik ID hiba. Az `odPlayer` a HTML-ben létezik, nem argumentumban átadott tetszőleges konténer.
 
 A megfigyelők saját cleanup művelete leállítja a keret figyelőit és időzítőit. **Ez nem a motor unmountja**, és nem teszi lehetővé egy második runtime indítását.
 
@@ -221,8 +227,8 @@ stateDiagram-v2
 4. Az eredeti sorrendben a `lib/odconfig_user.js`, majd a kiválasztott feladat `index.js` fájljának betöltése. Minden script külön `load`/`error` kezeléssel és időkorláttal fut, nem ESM-importként.
 5. A script által beállított `carco.data.okosdoboz.id` egyezésének ellenőrzése a kiválasztott ID-vel; szükséges névterek ellenőrzése.
 6. `carco.functions.loadProjects(callback)` pontosan egyszer. A callbackben a `createPlayer()` egyszeri hívása és visszatérési gyökerének megtartása.
-7. A keret kompatibilitási stílusának elhelyezése a motor által beszúrt stylesheet-elemek után, majd a fontos computed style értékek ellenőrzése. A betöltés közbeni dokumentumszélességet már a kezdeti, kellően specifikus keret-CSS védi.
-8. Layout- és készültségfigyelők indítása. A projektcallback csak strukturális készültség, nem bizonyítja az aszinkron pálya és képek befejezését.
+7. A kompatibilitási stylesheet elhelyezése és betöltésének megvárása. Az eredeti fejléc és kezelősáv DOM-elemeinek mozgatása a `controls` oldalsávba, meglévő eseménykezelőikkel együtt. Külön computed-style startup-validáció nincs.
+8. Layout- és készültségfigyelők indítása. A projektcallback csak strukturális készültség, nem bizonyítja az aszinkron pálya és képek befejezését. A `body.dataset.state` tényleges értékei `scripts-loading`, `project-loading`, `player-created`, `task-loading`, `ready`, `error`; a diagram konfigurációs szakasza konceptuális, nem mindegyik külön kódolt állapot.
 
 Nem másoljuk át az eredeti `window.onload` hozzárendelést, nem használunk jQuery `.load()`, `innerHTML`-es scriptindítást vagy `eval` hívást. A motor tölti a saját jQuery/CreateJS/MathJax függőségeit; ezeket a keret nem tölti be másodszor.
 
@@ -239,7 +245,7 @@ A készültségfigyelő azonnal kiértékeli az állapotot, majd `MutationObserv
 - A gyökérben a feladat renderelt gyermekei megjelentek.
 - A feladattér mérete pozitív.
 - A kezdeti betöltés és feladatépítés bizonyítéka mellett a preload réteg rejtett.
-- Két egymást követő animation frame-ben stabil, pozitív geometria mérhető.
+- A `waitForTask` többszöri mintában azonos pozitív geometriát vár (`stable >= 2`). Látható lapon animation frame, háttérben 100 ms-os timer ütemez. A teljes assetkészültséget és egy korábbi preload-megjelenést nem igazolja külön.
 
 A megfigyelő ne kizárólag egy később elkapott eseményre várjon: gyors betöltésnél már meglévő adatokat és DOM-ot is ellenőriznie kell. Későbbi pályaváltásnál a motor által megjelenített preload réteg alapján loading állapotba térhet vissza, új `createPlayer` nélkül.
 
@@ -249,17 +255,17 @@ Nem hívjuk újra a `root.carco.load("server", callback)` függvényt csak egy k
 
 A motor saját játéktérméretezése megmarad. A teljes lejátszót nem kényszerítjük 7:3 arányra, és nem skálázzuk CSS-transzformációval. A 3150 × 1350-es logikai tér arányos megjelenítéséért továbbra is a motor felel.
 
-A kompatibilitási CSS a `body.parcel-lesson-shell` és az `#odPlayer` alá szűkített. Feladata a dokumentum 750 px-es minimumának feloldása, a szükséges overflow/height szabályok korrigálása, a fejléc és kezelősáv újratördelése, valamint az információs és eredményrétegek elérhetősége. A motor meglévő gombjai és eseménykezelői megmaradnak; nincs külön másolat vagy click-továbbító UI.
+A kompatibilitási CSS a keret body-jára, `#odPlayer`-re és `#controls`-ra céloz. Bal oldalon a játéktér, jobb oldalon görgethető cím/instrukció/vezérlősáv található. A meglévő gombokat áthelyezzük, nem másoljuk. A 600 px-nél nem szélesebb portrait viewport elfordítási jelzést kap; a háttérkeret `inert`, a feladat betöltve marad. Popupok fixed pozícióval, viewportmagasság-korláttal és külön görgetéssel jelennek meg.
 
 ### Méretezési ciklus
 
 1. Valódi konténerszélesség-változásnál a keret a meglévő ablak-`resize` csatornát működteti. A motor saját `resizeEnd` pluginja végzi a gyermekek késleltetett átméretezését.
-2. A layout-adapter a meglévő `root.carco.resizeplayer` függvényt használhatja a játéktér méretéhez, majd a következő animation frame-ben korrigálja a külső player és szükséges belső wrapper magasságát.
-3. A teljes magasság a látható fejlécek, kezelősáv, játéktér, margók és border-box geometriájából készül, nem újabb fix 106 px-es konstansból.
+2. A `layout.js` a konténer szélességéből és magasságából számítja az `odPlayer` szélességét: `min(width - 8, (height - 14) * 3150 / 1350)`, minimum 1 px. A motor resize-kezelője számítja a feladattér magasságát.
+3. A külső player és belső wrapper magassága a játéktér mért magasságát követi. A fejléc nem része ennek, mert az oldalsávban van. A motor fix 106 px többletét ez a DOM-korrekció ellensúlyozza, nem motorfüggvény-csere.
 4. A betöltési réteg pozícióját a játéktér és a tényleges pozicionáló ős téglalapjából kell korrigálni; a motor fix 108/51 px-es top feltételezése újratördelt fejlécnél nem elegendő.
 5. A magasságot az információs rétegek és pályaváltások után is ellenőrizzük. Magas információs tartalomnál görgetés maradjon lehetséges.
 
-`ResizeObserver` a konténer szélességét és a kezelősávok magasságát figyeli. `requestAnimationFrame` összevonás, újrabelépési védelem és legfeljebb 1 px-es eltérést figyelmen kívül hagyó méretőr szükséges. Saját magasságírás nem indíthat végtelen `resize` sorozatot. A motor késleltetett korrekciója után ismételt, korlátos layout-ellenőrzés szükséges.
+`ResizeObserver` a konténert és játéktérszülőt figyeli; `MutationObserver` a player és oldalsáv style/class/gyermekváltozásait. Összevont frame/timer ütemezés és 1 px-es geometriai tolerancia akadályozza a redundáns írásokat. A main háttérben ritka viewport-ellenőrzést is végez.
 
 Nem feltételezünk `root.carco.resizeEnd()` API-t. A már regisztrált event listener az eredeti függvényreferenciát tartja; a `resizeplayer` property lecserélése nem cserélné le automatikusan a listenert. Ezért a POC nem írja felül a metódust.
 
@@ -269,7 +275,7 @@ Nem feltételezünk `root.carco.resizeEnd()` API-t. A már regisztrált event li
 
 Parcel kizárólag a keret HTML-belépési pontját és új moduljait dolgozza fel. Nem követjük Parcel HTML-függőségként a legacy feladat belépési pontját, és nem hash-eljük át a motor dinamikus fájlneveit.
 
-A tervezett `dev-server.mjs` egy origin alá egyesíti a keretet és az asseteket:
+A [scripts/server.mjs](scripts/server.mjs) fejlesztői ága egy origin alá egyesíti a keretet és az asseteket:
 
 - Parcel belső, loopback porton fut, az új keret buildjét készíti.
 - A külső fejlesztői szerver például a 3000-es porton érhető el; a port konfigurálható.
@@ -277,28 +283,28 @@ A tervezett `dev-server.mjs` egy origin alá egyesíti a keretet és az asseteke
 - A keret HTTP-kéréseit Parcelhez proxyzza, és a HMR WebSocket kapcsolatot is ugyanazon origin alatt kezeli.
 - Foglalt portnál érthető hibát ad; nem állít le meglévő folyamatot.
 
-A kiszolgálás bevált statikus middleware-t és proxykönyvtárat használjon helyes MIME- és WebSocket-kezeléssel. Egyedi rész csak a mount-, konfigurációs és indítási logika legyen. A fájlrendszer-hozzáférésnél canonical path/realpath ellenőrzés akadályozza meg a mounton kívüli, symlinkes vagy útvonalbejárásos hozzáférést.
+A dev szerver Express static middleware-t és http-proxy könyvtárat használ. A statikus útvonalkezelést Express biztosítja; külön canonical realpath/symlink-ellenőrzés nincs implementálva. Csak megbízható forráskönyvtárat használjunk.
 
 A prefix teljes útvonalszegmens: `/lessonsx` nem `/lessons` alatti kérés. Hiányzó legacy fájl valódi 404-et ad, **nem keret-HTML fallbacket**. Statikus útvonalon csak GET/HEAD támogatott. A feladatkönyvtár eredeti indexoldalára a szokásos directory index/redirect szabály vonatkozik.
 
-Kezdetben a forrásgyökér a meglévő repository. Opcionális `LESSONS_SOURCE_DIR` környezeti változó másik forrásgyökeret jelölhet; ez szerveroldali konfiguráció, nem böngészőből érkező fájlrendszerútvonal.
+Az alapértelmezett forrásgyökér a repository `lessons/` mappája. Opcionális `LESSONS_SOURCE_DIR` másik, azonos szerkezetű forrásgyökeret jelölhet; ez szerveroldali konfiguráció.
 
 ## Build és éles telepítés
 
-A tervezett buildlépések:
+A [scripts/build.mjs](scripts/build.mjs) tényleges lépései:
 
 1. Konfiguráció és célútvonalak ellenőrzése.
 2. Parcel production build a keret `dist/` könyvtárába.
-3. A validált konfiguráció változatlan értékeinek kiírása a keret mellé.
-4. A manifestben szereplő teljes feladatmappák, a közös `lib` és a generált feladatonkénti `lib` aliasmásolatok másolása a prefixnek megfelelő outputkönyvtárba. A pályák és képek a feladatmappák részei.
-5. Fájllista és SHA-256 ellenőrzés a forrás és a legacy output között.
+3. A manifestben szereplő feladatmappák, közös `lib` és feladatonkénti aliasmásolatok másolása; a hiányzó MathJax fájlok kiegészítése a telepített 2.7.9-es csomagból.
+4. A normalizált konfiguráció kiírása a build mellé. A prefix környezeti felülírása és normalizálása miatt ez nem bájtazonos másolata a forrás JSON-nak.
+5. A SHA-256 összevetés az `npm test` része, nem az önálló buildscripté. Heroku CNB alatt a `heroku-postbuild` futtatja a teszteket. A build előbb törli és újraépíti a gyökér `dist/` mappát.
 
 A másolás strukturált fájlrendszer-API-val történik; nem másolja a teljes repót, `.git` vagy `node_modules` tartalmat. Nem ír a forrásokba, és nem töröl az ellenőrzött outputgyökéren kívül. A MathJax és a képek teljes relatív hierarchiája megmarad.
 
 Gyökérbe telepítésnél például:
 
 ```text
-shell/dist/
+dist/
   index.html
   shell-config.json
   assets...                     Parcel által generált keretfájlok
@@ -313,11 +319,15 @@ shell/dist/
 
 A runtime konfiguráció prefixe és a generált mount helye összetartozik. **A JSON prefixének átírása önmagában nem mozgatja át az asseteket.** Új prefixhez újracsomagolás vagy az éles szerver mountjának átállítása is szükséges.
 
-Almappában telepített keretnél a kiadási gyökér és a keret base path külön konfigurálható: a keret például az output `app/` részébe kerül, míg a `/lessons` továbbra is az origin gyökeréhez kötött outputhely. Az `app/` és a prefix nem fedheti át egymást. Ezt a buildnek és a previewnak azonosan kell kezelnie.
+Almappás assetprefix támogatott; külön `/app/` alatti keret-base-path és külső assetmód nem implementált. A jelenlegi szerver gyökérútvonalas kerettel működik.
 
 A POC alapértelmezése a kezelt, automatikus legacy másolás. Már meglévő same-origin assetkiszolgálásra később külön, explicit külső-asset mód készülhet; ez nem szükséges az első működő próbához.
 
-Tervezett package script nevek: `dev`, `build`, `preview`, `test`, `test:e2e`. Ezek jelenleg nem futtatható projektparancsok. Parcel, proxy/middleware, ikonkönyvtár és Playwright támogatott verziói az implementációkor, lockfile-lal rögzítendők; csak a keret kap új dependencyket. A Node támogatott LTS verzióját szintén ekkor rögzítjük.
+A [package.json](package.json) működő parancsai `start`, `dev`, `build`, `preview`, `test`, `test:e2e`, `heroku-postbuild`. Node `24.x`, lockfile-os npm telepítés és [project.toml](project.toml) alapú Heroku builder használatos. A [Procfile](Procfile) web folyamata közvetlenül a production Node-szervert indítja. Csak Express runtime dependency; a többi keretfüggőség build/dev. A kész image-ben megmaradó forrásfájlok mennyiségét a buildpack határozza meg, nincs többfázisú Dockerfile-os runtime-válogatás.
+
+A production app induláskor ellenőrzi a build konfigurációját, indexoldalát és támogatott feladatbelépőit. GET/HEAD kiszolgálás, valódi 404, `nosniff`/Referrer-Policy, konfigurációra `no-store`, HTML/manifest/legacy fájlokra `no-cache`, kizárólag gyökérbeli hash-elt assetekre immutable cache. SIGTERM/SIGINT leállítás legfeljebb 10 másodperc. A 8080-as port és `/shell-config.json` probe a Kubernetes manifesttel egyezik; read-only, nem root buildpack-indítás helyben ellenőrzött.
+
+A visszaállított [k8s/deployment.yaml](k8s/deployment.yaml) ugyanakkor rögzített 101-es UID/GID-val, 32 MiB memóriarequesttel és 128 MiB limittel működik, `readOnlyRootFilesystem` nélkül. A helyi buildpack-próba a run image saját felhasználóját használta. Ezért a régi manifest és az új buildpack-image kompatibilitása még külön ellenőrzendő; a sikeres helyi tesztet nem tekintjük klaszterbeli rollout-igazolásnak. A jelenlegi konfiguráció részletei a README Kubernetes-fejezetében szerepelnek.
 
 ## Hibakezelés, fullscreen és biztonság
 
@@ -325,13 +335,15 @@ A keret magyar loading státuszt és konkrét hibát jelenít meg, `aria-live` �
 
 Hibás vagy lejárt indítás lezárt állapot. Újrapróbálás csak teljes oldalreload, nem ugyanabban a dokumentumban végzett remount. A keret megszakítja saját fetch-eit és figyelőit; egy script elem eltávolítása nem garantálja a motor összes későbbi kérésének megszakítását. A későn befejeződő callbackeket ezért is védeni kell.
 
-A fullscreen gomb felhasználói kattintásból hívja a `requestFullscreen()` műveletet a teljes feladatos keretre. `fullscreenchange` után layout-frissítés történik. Nem támogatott API-nál kibővített CSS-mód használható, állapotvesztés nélkül. Natív button, megfelelő ikon, tooltip, `aria-label` és látható billentyűfókusz szükséges; nem adunk külön használati útmutatót a feladat képernyőjére.
+A fullscreen célpont a `document.documentElement`, standard vagy WebKit API-val és 2500 ms időkorláttal. Nem támogatott/letiltott/megtagadott kérésnél a CSS fallback 64 px-re csukja az oldalsávot; a visszagomb megmarad. Ez nem rejti el a Safari címsorát. Kezdőképernyős standalone indításhoz manifest és Apple metaadatok vannak; külön service worker/offline mód nincs. Standalone állapotban a gomb csak a játéknagyítást kezeli. Valódi iPhone-os ellenőrzés szükséges.
 
-Ha eredményüzeneteket fogyasztunk, közvetlen mountban `event.source === window` és azonos origin szükséges, típus- és payload-ellenőrzéssel. Csak a meglévő `gyakorloEredmeny`, `tudasprobaEredmeny`, `escPressed` típusokra építünk; eredményszázalék csak véges 0–100 közötti értékként kezelhető. Az Escape nem végezhet dupla kilépést.
+A motor küldhet `gyakorloEredmeny`, `tudasprobaEredmeny` és `escPressed` üzeneteket, de a keret jelenleg nem fogyasztja ezeket és nem ment eredményt backendbe. Későbbi fogyasztónál origin/source és payload validáció szükséges; ez jelenleg jövőbeli követelmény, nem kész integráció.
 
 **Azonos origin nem sandbox.** Csak megbízható feladatcsomag tölthető be, mert a legacy script hozzáfér a keret teljes dokumentumához. A prefixvalidáció útvonalvédelmet ad, nem izolációt. A keret nem lazít CSP-t és nem vezet be `eval`-t; a régi motor esetleges CSP-követelményeit külön kompatibilitási feltételként kell vizsgálni.
 
-## Implementációs ütemezés
+## Eredeti implementációs ütemezés
+
+Az alábbi történeti ütemezés már részben megvalósult. Az aktuális készültséget a dokumentum eleje és a következő ellenőrzési fejezet rögzíti, nem az egykori belépési feltételek.
 
 | Lépés | Eredmény | Belépési/ellenőrzési feltétel |
 | --- | --- | --- |
@@ -365,13 +377,13 @@ A másolási előkészítés és a konfiguráció unit tesztjei párhuzamosan v�
 5. 320, 390, 750, 768, 1024 és 1440 px; álló/fekvő mobil és keskeny asztali konténer. Nincs levágott kezelősáv vagy dokumentumoldali vízszintes overflow.
 6. Konténer-only resize, font-/assetkészültség, pályaváltás és fullscreen után helyes geometria; a feladatállapot megmarad, a méretfrissítés stabilizálódik.
 7. Egér és touch találati koordináták, görgetés, fókusz és billentyűkezelés helyes; valódi mobilpróba is szükséges.
-8. `/lessons` és `/content/lessons` prefix, illetve almappás keret külön gyökérmounttal működik, dev és production preview alatt is.
+8. `/lessons` és `/content/lessons` assetprefix vizsgálata. Almappás kerettelepítés külön fejlesztési feladat, nem a jelenlegi implementáció állítása.
 9. Hiányzó asset valódi 404; nincs HTML-t scriptként visszaadó fallback, mixed content vagy indokolatlan legacy külső host kérés.
 10. Hibás konfiguráció, script/project/task timeout és késői callback kontrollált hibát ad dupla inicializálás nélkül.
 11. Natív fullscreen és fallback működik, Escape kezelése egyszeri, a feladatállapot nem vész el.
 12. A legacy források és csomagolt másolatok hash-e egyezik; nincs motor- vagy feladatforrás-diff.
 
-A 1710-es feladat nem bizonyítja az összes feladattípus támogatását. Húzós, szövegbeviteles, matematikai és hangos feladatokhoz további valós tesztminták szükségesek. **Egyik fenti runtime tesztet sem tekintjük jelenleg teljesítettnek.**
+A 1710-es feladat nem bizonyítja az összes feladattípus támogatását. A build és 16 Node-teszt, pack image-indítás, HTTP- és korábbi integrált böngészős próbák sikeresek. A hat Playwright-teszt teljes CLI-futása és a valódi mobil/iPhone-mátrix nem igazolt. A fenti lista ellenőrzési terv, nem minden pontjában teljesített suite.
 
 ## Kilépési és döntési pontok
 

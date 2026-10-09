@@ -2,18 +2,18 @@
 
 ## Parcel POC terv
 
-Az első, konzervatív POC implementációja a [shell/package.json](shell/package.json) alatt található: iframe nélküli Parcel-keret, egy oldalbetöltésben egy feladat, konfigurálható same-origin `/lessons` prefix és változatlan legacy források. A specifikáció és az implementáció eltérései a [parce-poc.md](parce-poc.md) dokumentumban olvashatók.
+Az első, konzervatív POC implementációja a [package.json](package.json) alatt található: iframe nélküli Parcel-keret, egy oldalbetöltésben egy feladat, konfigurálható same-origin `/lessons` prefix és változatlan legacy források. A jelenlegi architektúra a [parcel-poc.md](parcel-poc.md) dokumentumban olvasható.
 
 ## Futtatás
 
-Node.js 22 vagy újabb verzió szükséges. A repository gyökeréből:
+Node.js 24 szükséges (a buildpack is a `24.x` főverziót használja). A repository gyökeréből:
 
 ```sh
-npm ci --prefix shell
-npm run dev --prefix shell
+npm ci
+npm run dev
 ```
 
-A keret címe: **http://localhost:3000/?lesson=1710**. Másik port: `PORT=3100 npm run dev --prefix shell`. A belső Parcel-port alapértelmezésben a külső port + 1; `PARCEL_PORT` értékkel felülírható. Nincs iframe, és nincs SPA-feladatcsere.
+A keret címe: **http://localhost:3000/?lesson=1710**. Másik port: `PORT=3100 npm run dev`. A belső Parcel-port alapértelmezésben a külső port + 1; `PARCEL_PORT` értékkel felülírható. Nincs iframe, és nincs SPA-feladatcsere.
 
 Telefonméretű álló nézetben (legfeljebb 600 px széles portrait viewport) a keret a telefon elfordítását kéri. A feladat betöltve marad, a háttérben lévő vezérlők ilyenkor nem kezelhetők; visszaforgatás nem indítja újra a pályát. A játéktér a viewport bal oldalán a lehető legnagyobb arányos méretet használja, a cím, instrukció, előrehaladás és eredeti vezérlők pedig a külön görgethető jobb oldali sávba kerülnek.
 
@@ -24,12 +24,28 @@ iPhone-on a natív teljes dokumentumos fullscreen támogatása böngésző-/iOS-
 Az eredmény- és információs panelek a viewporton belül maradnak, hosszabb tartalmuk külön görgethető. A legacy motornak gyökérhez viszonyított `lib` útvonalat adunk, így a HTTPS-címek régi normalizálója nem rontja el a helyes/hibás választ jelző ikonok URL-jét.
 
 ```sh
-npm run build --prefix shell
-npm test --prefix shell
-PORT=3200 npm run preview --prefix shell
+npm run build
+npm test
+PORT=3200 npm run preview
 ```
 
-Az `npm test` a kész build legacy hash-eit is ellenőrzi, ezért előtte szükséges a build. A preview címe ekkor http://localhost:3200/. A `shell/dist` statikusan is kiszolgálható.
+Az `npm test` a kész build legacy hash-eit is ellenőrzi, ezért előtte szükséges a build. A preview címe ekkor http://localhost:3200/. A `dist` statikusan is kiszolgálható.
+
+## Node production szerver
+
+Éles futtatáskor nincs szükség Nginxre vagy futó Parcelre:
+
+```sh
+npm run build
+npm test
+npm start
+```
+
+Alapértelmezett cím: http://localhost:8080/. Másik porthoz `PORT=3600 npm start`. A [scripts/production-server.mjs](scripts/production-server.mjs) a [scripts/production-app.mjs](scripts/production-app.mjs) Express-alkalmazását indítja; kizárólag a kész `dist/` tartalmat szolgálja ki. A `DIST_DIR` másik buildkönyvtárat jelölhet. Induláskor ellenőrzi a konfigurációt, a belépőoldalt és a manifestben szereplő feladatok belépőscriptjeit; hibás builddel nem indul el. A `lessonsPrefix` továbbra is buildhez kötött, futásidejű `LESSONS_PREFIX` nem változtatja meg a production mountot.
+
+A szerver GET/HEAD kéréseket kezel, hiányzó fájlokra valódi 404-et ad. `nosniff` és Referrer-Policy headereket küld, az Express verziójelzése kikapcsolt. A konfiguráció `no-store`; HTML, manifest és legacy fájlok `no-cache` újraellenőrzést kapnak. Csak a gyökérben lévő, tényleges hash-elt buildassetek cache-elhetők egy évig `immutable` szabállyal. SIGTERM/SIGINT után legfeljebb 10 másodperces, korlátos leállítás következik.
+
+A production-függőség csak Express. Parcel, Playwright, http-proxy, lucide és MathJax build-/fejlesztési függőségek; a böngésző által használt MathJax-fájlok továbbra is a buildbe kerülnek, tehát annak korábban jelzett biztonsági kockázata nem szűnik meg. A régi `npm run preview` megmarad fejlesztői ellenőrzéshez; éles indításhoz az `npm start` használható.
 
 ## iPhone kezdőképernyős alkalmazás
 
@@ -41,36 +57,49 @@ A keret webmanifesttel, 192/512 px-es alkalmazásikonokkal és 180 px-es Apple t
 
 A Safari-lap fullscreen gombja nem tudja automatikusan telepíteni vagy standalone módba váltani az oldalt. A kezdőképernyős alkalmazásban a gomb a játéktér nagyítását és a vezérlők visszaállítását végzi. Az indítás a konfigurált alapértelmezett feladatot választja; a manifest `start_url` és `scope` értéke `./`.
 
-Ez **online standalone alkalmazás**, nem offline kiadás: nincs service worker és nincs feladatcache. Internetkapcsolat szükséges. A manifest/ikonok buildbe kerülését automatizált teszt ellenőrzi; a tényleges iPhone-os telepítés és címsor nélküli indítás valódi eszközön ellenőrzendő. A generált ikonok újrakészítése: `node shell/scripts/generate-icons.mjs`.
+Ez **online standalone alkalmazás**, nem offline kiadás: nincs service worker és nincs feladatcache. Internetkapcsolat szükséges. A manifest/ikonok buildbe kerülését automatizált teszt ellenőrzi; a tényleges iPhone-os telepítés és címsor nélküli indítás valódi eszközön ellenőrzendő. A generált ikonok újrakészítése: `node scripts/generate-icons.mjs`.
 
-## Docker hosztolás
+## Buildpack hosztolás
 
-A gyökérben található [Dockerfile](Dockerfile) Node.js 22 alatt elkészíti a production buildet és futtatja a Node-teszteket. A végső image csak a statikus outputot és a nem root felhasználóval futó Nginx-kiszolgálót tartalmazza; nincs benne Parcel fejlesztői szerver vagy Node runtime.
-
-A repository gyökeréből:
+A konténerimage Cloud Native Buildpacks segítségével készül, Dockerfile és Nginx nélkül. A repository gyökeréből:
 
 ```sh
-docker build -t okosdoboz-shell:poc .
-docker run --detach --name okosdoboz-shell --restart unless-stopped -p 8080:8080 okosdoboz-shell:poc
+pack build okosdoboz --builder heroku/builder:24
 ```
 
-Elérés: **http://localhost:8080/?lesson=1710**. A konténer belső portja 8080, healthcheckje a konfigurációs fájl HTTP-elérhetőségét ellenőrzi. Más külső porthoz például `-p 8085:8080` használható. Internetes publikálásnál HTTPS-t biztosító reverse proxy szükséges.
+A [project.toml](project.toml) rögzíti a buildert és kizárja a helyi `node_modules`, buildoutput, cache, Git, Kubernetes és dokumentációs fájlokat a build bemenetéből. A buildpack a gyökérbeli package/lockfile alapján telepíti a függőségeket, futtatja az `npm run build`, majd az `npm run heroku-postbuild` lépést. Utóbbi az összes Node-tesztet futtatja. A Parcelhez szükséges devDependencies a build során szükségesek; ne tiltsd le telepítésüket.
 
-Alternatív feladatprefix az image építésekor adható meg:
+A [Procfile](Procfile) web folyamata:
+
+```text
+web: node scripts/production-server.mjs
+```
+
+A production szerver a platform `PORT` változóját használja; alapértéke 8080. Helyi image-indítás:
 
 ```sh
-docker build --build-arg LESSONS_PREFIX=/content/lessons -t okosdoboz-shell:custom .
+docker run --rm -e PORT=8080 -p 8080:8080 okosdoboz
 ```
 
-A prefix a buildben szereplő konfigurációhoz és assethelyhez kötött; futásidejű környezeti változóval nem módosítható. Az [nginx.conf](nginx.conf) valódi 404-et ad hiányzó fájlokra, a konfigurációra `no-store` cache-szabályt használ. A [.dockerignore](.dockerignore) kizárja a helyi függőségeket, buildoutputokat és tesztartefaktumokat a build contextből.
+Elérés: http://localhost:8080/?lesson=1710. A `pack` továbbra is konténer-runtime-ot igényel, de egyedi Docker buildfájl már nincs. A régi többfázisú Dockerfile runtime-tartalomra és UID-ra vonatkozó garanciái nem érvényesek az új buildpack-image-re. Az alkalmazás kizárólag a `dist` tartalmát szolgálja ki, akkor is, ha a buildpack más forrásfájlokat is az image-ben hagy.
 
-A konténerbuild és a HTTP smoke teszt sikeres: keret, konfiguráció és feladatbelépőasset elérhető, az Nginx nem rootként fut. A lent dokumentált legacy/MathJax biztonsági korlátok a konténeres kiadásra is vonatkoznak.
+Alternatív assetprefix buildidőben:
+
+```sh
+pack build okosdoboz --builder heroku/builder:24 --env LESSONS_PREFIX=/content/lessons
+```
+
+A prefix futásidőben nem módosítható fájláthelyezés nélkül. HTTPS-t a külső proxy/Ingress biztosít. A manifestet, ikonokat és legacy asseteket az alkalmazás buildje állítja elő, offline mód továbbra sincs.
+
+Ellenőrzés: a tényleges `pack build okosdoboz --builder heroku/builder:24` sikeres, Node.js 24.21.0 alatt mind a 16 Node-teszt lefutott. A buildpack felismerte a Procfile web folyamatát. Az image nem rootként, read-only fájlrendszerrel, eldobott capabilitykkel és 128 MiB memórialimittel elindult; a keret, konfiguráció, manifest és feladatasset 200-at, hiányzó asset 404-et adott. SIGTERM után 0-s exit kóddal leállt. A korábbi tárhelyhiány a jóváhagyott cache-takarítás után megszűnt. Registry-push és klaszterfrissítés ebben az ellenőrzésben nem történt.
 
 ## Kubernetes
 
-A [k8s/deployment.yaml](k8s/deployment.yaml) két Nginx-példányt indít resource limitekkel, nem root felhasználóval és HTTP startup/readiness/liveness probe-okkal. A [k8s/service.yaml](k8s/service.yaml) belső `ClusterIP` Service: 80-as portja a podok 8080-as portjára mutat. A manifestek nem rögzítenek namespace-t.
+A [k8s/deployment.yaml](k8s/deployment.yaml) a visszaállított, korábbi verzió: két példány, `runAsNonRoot: true`, rögzített `runAsUser: 101` és `runAsGroup: 101`, HTTP startup/readiness/liveness probe-ok. A memóriarequest **32 MiB**, a limit **128 MiB**; a CPU-request 50m, a limit 500m. A manifest **nem** állít `readOnlyRootFilesystem` értéket. A [k8s/service.yaml](k8s/service.yaml) belső `ClusterIP` Service: 80-as portja a podok 8080-as portjára mutat. A manifestek nem rögzítenek namespace-t.
 
-Telepítés előtt a Deployment `image` értékét cseréld a saját registrybe feltöltött, verziózott image nevére. Az alapértelmezett `okosdoboz-shell:poc` csak akkor használható, ha az image minden érintett node számára elérhető; a helyi Docker-image önmagában nem kerül be a klaszterbe. Privát registry esetén külön `imagePullSecrets` beállítás szükséges.
+**Buildpack-telepítés előtt ellenőrzendő:** a helyi image-próba a Heroku run image saját felhasználójával történt, nem kényszerített 101-es UID/GID-val. A jelenlegi Deployment ezt felülírja, ezért az új image klaszterbeli indíthatósága ezzel a manifesttel még nem igazolt. Az UID/GID és a memóriarequest összehangolása külön telepítési döntés; a dokumentáció ellenőrzése nem módosítja a visszaállított manifestet. A sikeres helyi read-only teszt szintén nem jelenti, hogy a manifest read-only futást ír elő.
+
+Telepítés előtt a Deployment `image` értékét állítsd a feltöltött, verziózott image nevére. A manifest jelenlegi értéke `cr.hvg.hu/os/okosdoboz-shell:poc`, `imagePullPolicy: Always` beállítással. A `pack build okosdoboz` csak helyi image-et készít: nem pusholja és nem indít rolloutot. Privát registry esetén a klaszter számára registry-hitelesítés szükséges; `imagePullSecrets` jelenleg nincs a manifestben.
 
 ```sh
 kubectl apply -f k8s/
@@ -78,7 +107,7 @@ kubectl rollout status deployment/okosdoboz-shell
 kubectl port-forward service/okosdoboz-shell 8080:80
 ```
 
-A port-forward után http://localhost:8080/?lesson=1710 címen érhető el. A parancsok az aktuális kubectl context namespace-ét használják; más namespace-hez add hozzá a `-n <namespace>` kapcsolót. Külső, HTTPS-es publikáláshoz külön Ingress vagy Gateway konfiguráció szükséges, ez nem része a két manifestnek.
+A port-forward után http://localhost:8080/?lesson=1710 címen érhető el. A parancsok az aktuális kubectl context namespace-ét használják; más namespace-hez add hozzá a `-n <namespace>` kapcsolót. A [k8s/ingress.yaml](k8s/ingress.yaml) már tartalmaz `kong` ingressClass-szal HTTP route-ot az `okosdoboz-poc.staging-hvg.hu` hosthoz, TLS-konfiguráció nélkül. HTTPS-t külön külső proxy biztosíthat; ezt a manifest nem állítja be.
 
 ## Források és konfiguráció
 
@@ -89,23 +118,28 @@ lessons/
     1710/                      eredeti HTML, index.js és XML-ek
     tracksjs/                  a feladat pályái
     images_ms/                 a feladat képei, half/ almappával
-shell/                         új Parcel-keret és tesztek
+index.html                     Parcel-belépési pont
+package.json                   npm-parancsok és függőségek
+src/                           keret és adapterek
+scripts/                       build és kiszolgálás
+tests/                         regressziós tesztek
+public/                        keretkonfiguráció
+assets/                        alkalmazásikonok
 ```
 
-A [shell/public/shell-config.json](shell/public/shell-config.json) állítja a `lessonsPrefix`, `defaultLessonId`, `supportedLessonIds` és `loadTimeoutMs` értékeket. Új feladat azonos szerkezetben helyezhető el a `lessons/<ID>/` alatt, majd a manifest bővíthető; az adapterkódhoz nem kell új feladatág.
+A [public/shell-config.json](public/shell-config.json) állítja a `lessonsPrefix`, `defaultLessonId`, `supportedLessonIds` és `loadTimeoutMs` értékeket. Új feladat azonos szerkezetben helyezhető el a `lessons/<ID>/` alatt, majd a manifest bővíthető; az adapterkódhoz nem kell új feladatág.
 
-Alternatív prefix fejlesztéskor: `LESSONS_PREFIX=/content/lessons npm run dev --prefix shell`. Éles buildnél ugyanezt a változót a buildhez kell megadni. A preview a buildben tárolt konfigurációt használja: csak a prefix JSON-értékének átírása nem mozgatja át a fájlokat. `LESSONS_SOURCE_DIR` másik forráskönyvtárat jelölhet, az új `lessons/` szerkezetben.
+Alternatív prefix fejlesztéskor: `LESSONS_PREFIX=/content/lessons npm run dev`. Éles buildnél ugyanezt a változót a buildhez kell megadni. A preview a buildben tárolt konfigurációt használja: csak a prefix JSON-értékének átírása nem mozgatja át a fájlokat. `LESSONS_SOURCE_DIR` másik forráskönyvtárat jelölhet, az új `lessons/` szerkezetben.
 
 A motor a `lib` szülőjéből számolja az assetgyökeret. Ezért a `/lessons/1710/lib/` virtuális útvonal a közös `/lessons/lib/` tartalmát szolgálja ki. A production build feladatonként generált könyvtármásolattal biztosítja ugyanezt; ez nem új, kézzel karbantartandó forrás. A feladat belépőscriptje `/lessons/1710/1710/index.js`.
 
 ## Ellenőrzés és korlátok
 
-Sikeres production build és öt Node-teszt: prefix/ID validáció, scriptbetöltési sorrend, egyszeri indítás, abort utáni késői callback, valamint bájtazonos legacy output. Az integrált böngészőben ellenőrizve: 320–1440 px-es elrendezés, dev és production betöltés, `/lessons` és `/content/lessons` prefix, választás/ellenőrzés/megoldás/pályaváltás, info képernyő és valódi asset-404.
+Sikeres production/buildpack build és 16 Node-teszt: konfiguráció, fullscreen, betöltő, bájtazonos legacy output, production HTTP és standalone assetek. A [tests/lesson.spec.mjs](tests/lesson.spec.mjs) hat Playwright-tesztet tartalmaz; ezek létezése nem azonos a teljes suite sikeres futásával. Korábbi integrált böngészős próbák igazolták a hat pálya végigjátszását, az ikonútvonal-javítást, forgatást, popupokat és natív fullscreen működést. Ezek külön vizsgálatok voltak, nem minden eszközre és a jelenlegi branch teljes változására kiterjedő automatizált regresszió.
 
 Az automatizált Playwright-suite a jelenlegi Linux-környezetben hiányzó Chromium rendszerkönyvtárak miatt nem futott végig. Másik, előkészített gépen:
 
 ```sh
-cd shell
 npx playwright install chromium
 npm run test:e2e
 ```
@@ -114,11 +148,11 @@ Linuxon a Playwright rendszerfüggőségeit is telepíteni kell; az esetleges ad
 
 A mellékelt MathJax-mappa üres volt. A keret MathJax **2.7.9** fájlokkal egészíti ki a kiszolgálást és a buildet, a meglévő motorfájlok módosítása nélkül. Az npm audit erre ismert, magas súlyosságú **ReDoS** figyelmeztetést ad ([GHSA-v638-q856-grg8](https://github.com/advisories/GHSA-v638-q856-grg8)); a 4-es főverzió nem közvetlen helyettesítő a régi `MathJax.Hub` API-hoz. Csak megbízható feladatcsomagokkal használható POC, élesítés előtt külön biztonsági döntés szükséges.
 
-További feladattípusok, teljes hatpályás regresszió, valódi mobilos touch és fullscreen/fallback mátrix még külön ellenőrzendők. Az arányos feladatkicsinyítés nem jelent szöveges újratördelést.
+További feladattípusok, valódi mobilos touch, iPhone standalone indítás és a teljes fullscreen/fallback mátrix még külön ellenőrzendők. Az arányos feladatkicsinyítés nem jelent szöveges újratördelést.
 
 ## Eredeti felmérés
 
-Az alábbi fejezetek az általános megközelítést és alternatívákat őrzik. A fenti futtatási útmutató és az új forrásstruktúra az aktuális POC-ra vonatkozó elsődleges szerződés.
+Az alábbi fejezetek az eredeti tervezési megfontolásokat és nem implementált alternatívákat őrzik. Jövő idejű megfogalmazásaik történeti tervek, nem az aktuális készültségi állapot. A fenti útmutató és a parcel-poc dokumentum az aktuális POC elsődleges szerződése.
 
 ## Állapot és cél
 
@@ -135,7 +169,7 @@ Egyeztetett elvárások:
 
 Kiindulópont: [lessons/1710/1710/index.html](lessons/1710/1710/index.html). Éles referencia: [Újságíró-iskola](https://www.okosdoboz.hu/feladatsor?id=1710).
 
-Az éles oldal tartalmát lekértük, de a tényleges beágyazási DOM-ját, CSP/X-Frame-Options fejléceit és böngészős méreteit nem igazoltuk. A közvetlen beágyazás működése még hipotézis, nem teszteredmény.
+Az eredeti okosdoboz.hu portál beágyazási DOM-ját és framing fejléceit nem igazoltuk. A saját közvetlen betöltés viszont már implementált és böngészőben ellenőrzött a mellékelt 1710-es csomaggal; az eredeti portál feladatcíme nem bizonyítja a helyi csomag tartalmának azonosságát.
 
 ## A meglévő rendszer
 
@@ -166,7 +200,7 @@ A `playersize: "fullscreen"` itt méretezési beállítás; nem jelenti önmagá
 
 ## Változatlan legacy környezet
 
-A modern build kizárólag az új keretet, annak stílusát és adapterét dolgozza fel. A legacy fájlok változatlan statikus másolással, a relatív mappaszerkezet megőrzésével kerülnek a kiszolgálásba. A másolást később automatizáljuk; a jelenlegi könyvtárak maradnak az egyetlen forrás.
+A modern build kizárólag az új keretet, annak stílusát és adapterét dolgozza fel. A legacy fájlok változatlan másolását már a scripts/assets.mjs automatizálja; a forráskönyvtárak maradnak az egyetlen karbantartott forrás.
 
 Megőrzendő tartalmak: a közös motor a `lessons/lib/`, a feladat belépője a `lessons/1710/1710/`, a pályák a `lessons/1710/tracksjs/`, a képek a `lessons/1710/images_ms/` alatt, beleértve minden dinamikusan betöltött fájlt.
 
@@ -192,7 +226,7 @@ Parcelben nem feltételezünk Astro-szerű automatikus `public/` másolást. Exp
 
 A keretadapter klasszikus script-elemekkel tölti be a motort. Megőrzi a `name="carco"`, `project="okosdoboz"` attribútumokat, a `lib` értékéhez pedig a konfigurálható prefixből képzett, például `/lessons/1710/lib/` virtuális URL-t adja. A dokumentum globális `<base>` elemét nem használjuk útvonalkorrekcióra.
 
-Az első POC alapértelmezett prefixe `/lessons`, de például `/content/lessons` is használható. A prefix a feladatok forráshelyét jelöli, nem a keret útvonalát: a keret például `/?lesson=1710` címen indul. A pontos URL- és telepítési szerződést a [parce-poc.md](parce-poc.md) rögzíti.
+Az első POC alapértelmezett prefixe `/lessons`, de például `/content/lessons` is használható. A prefix a feladatok forráshelyét jelöli, nem a keret útvonalát: a keret például `/?lesson=1710` címen indul. A pontos URL- és telepítési szerződést a [parcel-poc.md](parcel-poc.md) rögzíti.
 
 ## Astro: alternatív keretirány
 
@@ -216,7 +250,7 @@ A teljes eredeti HTML-t nem töltjük be jQuery `.load()` hívással. Ez nem őr
 
 ### Vizsgálandó közvetlen betöltés
 
-**Hipotézis:** egy aktív feladat egy dokumentumban közvetlenül a keret `odPlayer` elemébe indítható, a legacy források átírása nélkül. Ezt külön böngészős próbával kell igazolni.
+**Megvalósult:** a 1710-es feladat a keret `odPlayer` elemébe indul, iframe nélkül. Más, azonos szerződésű csomagok támogatásához további tesztpéldák szükségesek.
 
 Az adapter tervezett indítási sorrendje:
 
@@ -282,17 +316,19 @@ A keretrendszer kiválasztása önmagában nem oldja meg a régi motor reszponzi
 
 ### Tervezett fájlszerkezet
 
-Későbbi Parcel megvalósítás lehetséges elrendezése, még nem létrehozott fájlokkal:
+A keret a repository gyökerében található. Az eredeti terv helyett az aktuális elrendezés:
 
 ```text
-shell/
+4kids/
   index.html
   package.json
   src/
-    legacy-adapter.js
+    lesson-loader.js
     shell.css
   scripts/
-    sync-legacy.mjs
+    assets.mjs
+    build.mjs
+    server.mjs
 ```
 
 Astro választásakor külön feladatoldal, `LegacyTask.astro` komponens és `public/legacy/` másolat készülhet. Nem építjük fel egyszerre mindkét keretet. A megvalósítás és a futtatóparancsok csak a technológiai döntés után kerülnek a dokumentációba.
@@ -314,13 +350,13 @@ A későbbi keret elfogadási feltételei:
 9. A fogyasztott üzenetek origin-, forrás- és tartalomellenőrzése megfelelő. A méretfigyelés nem okoz ismétlődő visszacsatolást.
 10. Automatizált böngészős ellenőrzés és képernyőképek mellett valódi mobilos érintéspróba is szükséges.
 
-**Jelenleg nincs runtime teszteredmény.** A fenti lista jövőbeli elfogadási feltétel, nem teljesített tesztlista.
+Az aktuális ellenőrzési eredmények a fenti „Ellenőrzés és korlátok” fejezetben szerepelnek. Ez a történeti lista nem tekinthető minden pontjában teljesített elfogadási mátrixnak.
 
 ## Határok és nyitott döntések
 
 Nem cél a feladatadatok átírása, a jQuery/CreateJS/MathJax frissítése, több párhuzamos runtime, SPA-életciklus, backend/LMS átalakítás vagy a nyilvános portál újraépítése. A rögzített pályaadatokból valódi szöveg-reflow nem vállalható feladatadaptáció nélkül.
 
-Nyitott kérdések: Parcel vagy Astro végleges választása; a statikus kiszolgálás módja és telepítési prefixe; a közvetlen betöltés kompatibilitása; a tényleges készültségi jel és kezelősávmagasság mérési módja; a további regressziós feladatminták.
+Parcel, Express production kiszolgálás, buildpack build és a konfigurálható prefix már megvalósult. Nyitott feladat a további feladattípusok, valódi mobilok és a teljes regressziós mátrix ellenőrzése; Astro és iframe nincs implementálva.
 
 A közös motor vagy lejátszó módosítása külön döntést igényel. A következő fejlesztési lépés csak a dokumentáció elfogadása és új jóváhagyás után indul.
 

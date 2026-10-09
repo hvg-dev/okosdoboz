@@ -1,0 +1,22 @@
+[_]
+schema-version = "0.2"
+id = "hu.hvg.okosdoboz"
+name = "Okosdoboz"
+
+[io.buildpacks]
+builder = "heroku/builder:24"
+exclude = [
+  ".git/",
+  ".vscode/",
+  "node_modules/",
+  ".parcel-cache/",
+  ".parcel-dev/",
+  "dist/",
+  "test-results/",
+  "playwright-report/",
+  "k8s/",
+  ".env",
+  ".env.*",
+  "*.log",
+  "*.md"
+]

@@ -1,6 +1,6 @@
-shell/node_modules/
-shell/.parcel-cache/
-shell/.parcel-dev/
-shell/dist/
-shell/test-results/
-shell/playwright-report/
+/node_modules/
+/.parcel-cache/
+/.parcel-dev/
+/dist/
+/test-results/
+/playwright-report/

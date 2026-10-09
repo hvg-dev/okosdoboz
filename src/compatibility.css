@@ -1,0 +1,39 @@
+body.parcel-lesson-shell { min-width: 0; height: 100dvh; min-height: 0; max-height: none; overflow: hidden; }
+#odPlayer { height: auto; max-width: 100%; }
+#odPlayer > .drwmsg-player { position: relative; height: auto; max-height: none; }
+#odPlayer .drwmsg-flex-container { height: auto; }
+#odPlayer .drwmsg-flex-container > .drwmsg { display: block; max-height: none; }
+#odPlayer .drwmsg-gamein { width: 100% !important; padding: 0; border: 0; border-radius: 0; box-shadow: none; }
+#controls .drwmsg-player-header { height: auto; min-height: 0; position: relative; margin: 0 0 12px; }
+#controls .drwmsg-player-header-bg { display: none; }
+#controls .drwmsg-player-header-content { margin: 0; width: 100%; display: flex; flex-direction: column; align-items: stretch; gap: 10px; }
+#controls .drwmsg-player-title { padding: 0; font-size: 18px; line-height: 1.3; color: #20352c; white-space: normal; }
+#controls .drwmsg-navigation { float: none; margin: 0; }
+#controls .drwmsg-game-header { width: 100%; height: auto; min-height: 0; display: flex; flex-direction: column; align-items: stretch; border: 0; box-shadow: none; border-radius: 0; background: transparent; }
+#controls .drwmsg-game-title-box { width: 100% !important; min-width: 0; height: auto; padding: 0; margin-bottom: 16px; }
+#controls .drwmsg-title-spacer { position: static; display: block; width: 100% !important; height: auto; }
+#controls .drwmsg-game-title { display: block; line-height: 1.4; font-size: 15px !important; white-space: normal; overflow-wrap: anywhere; }
+#controls .drwmsg-check-box { display: flex !important; flex-direction: column; align-items: stretch; gap: 8px; float: none; width: 100%; min-width: 0; height: auto; margin: 0; }
+#controls .drwmsg-nav_ul { float: none; margin: 0; width: 100%; min-width: 0; min-height: 44px; height: auto; padding: 0 8px; box-sizing: border-box; white-space: normal; }
+#controls .drwmsg-nav_ul_disable { display: block !important; color: #7c8982 !important; pointer-events: none; }
+#controls [style*="display: none"] { display: none !important; }
+#odPlayer .drwmsg-layers { display: none; }
+#odPlayer .drwmsg-endscreen {
+	position: fixed;
+	top: 12px !important;
+	bottom: auto !important;
+	left: 12px !important;
+	right: calc(var(--rail-width) + 12px) !important;
+	width: auto !important;
+	height: auto !important;
+	max-height: calc(100dvh - 24px);
+	max-width: none;
+	margin: 0 !important;
+	padding: 16px;
+	box-sizing: border-box;
+	overflow: auto;
+	overscroll-behavior: contain;
+}
+#odPlayer .drwmsg-endtrans { z-index: 60000000; }
+#odPlayer .drwmsg-layer_trans { position: fixed; inset: 0 var(--rail-width) 0 0; width: auto !important; height: auto !important; z-index: 59999999; }
+#odPlayer .drwmsg-preload_layer { position: absolute; }

@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { validateConfig } from '../src/config.js';
 
 export const shellRoot = fileURLToPath(new URL('../', import.meta.url));
-export const sourceRoot = path.resolve(process.env.LESSONS_SOURCE_DIR || path.join(shellRoot, '../lessons'));
+export const sourceRoot = path.resolve(process.env.LESSONS_SOURCE_DIR || path.join(shellRoot, 'lessons'));
 export const mathRoot = path.join(shellRoot, 'node_modules/mathjax');
 
 export async function readConfig(origin = 'http://localhost:3000') {
