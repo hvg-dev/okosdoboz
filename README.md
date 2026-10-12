@@ -6,6 +6,15 @@ Az első, konzervatív POC implementációja a [package.json](package.json) alat
 
 ## Futtatás
 
+Az 1710-es feladatcsomag mind a hat pályája két külön URL-en játszható végig ugyanabban a reszponzív keretben:
+
+- Eredeti, PNG-s változat: http://localhost:3000/?lesson=1710&version=original
+- Felújított, SVG-s változat: http://localhost:3000/?lesson=1710&version=svg
+
+A `version` paraméter fejlesztésben, preview-ban és productionben is működik; telepített környezetben csak a hostot kell cserélni. A változat nélküli `/?lesson=1710` és `/` cím megtartja az SVG-s alapértelmezést. Mindkét változat a legacy motor szokásos pályasorrendjét, válaszválasztását, ellenőrzését, megoldását és eredményképernyőjét használja. Az eredeti változatban az SVG-adapter nem fut le. Üres, ismeretlen vagy többször megadott `version` értéknél a motor nem indul el.
+
+Az SVG-s változat mind a hat pályán külön SVG-szövegrétegként jeleníti meg a képre égetett promptokat. A nem interaktív SVG-összehasonlító a `npm run dev` után a [/experiments/1710-track-1/](experiments/1710-track-1/index.html) címen érhető el; a pályaválasztóval 1–6 között válthatsz. A determinisztikus, első pályáról induló SVG-végigteszt útvonala `/?lesson=1710&version=svg#svg-poc-1710-1`. A motor adaptere csak az aktuális pálya `id104` háttérelemét cseréli le, trackváltás után a megfelelő prompttal; a válaszmezők és a legacy motor változatlanok. A PNG-illusztráció raszter marad (az SVG-be ágyazva), a négy prompt SVG `<text>` rétegre kerül. A koordinátás feladatot nem rendezi át mobilra. Az eredeti pályaadatot és PNG-ket nem módosítja.
+
 Node.js 24 szükséges (a buildpack is a `24.x` főverziót használja). A repository gyökeréből:
 
 ```sh
@@ -15,11 +24,15 @@ npm run dev
 
 A keret címe: **http://localhost:3000/?lesson=1710**. Másik port: `PORT=3100 npm run dev`. A belső Parcel-port alapértelmezésben a külső port + 1; `PARCEL_PORT` értékkel felülírható. Nincs iframe, és nincs SPA-feladatcsere.
 
-Telefonméretű álló nézetben (legfeljebb 600 px széles portrait viewport) a keret a telefon elfordítását kéri. A feladat betöltve marad, a háttérben lévő vezérlők ilyenkor nem kezelhetők; visszaforgatás nem indítja újra a pályát. A játéktér a viewport bal oldalán a lehető legnagyobb arányos méretet használja, a cím, instrukció, előrehaladás és eredeti vezérlők pedig a külön görgethető jobb oldali sávba kerülnek.
+Telefonméretű álló nézetben (legfeljebb 600 px széles portrait viewport) a keret a telefon elfordítását kéri. A feladat betöltve marad, a háttérben lévő vezérlők ilyenkor nem kezelhetők; visszaforgatás nem indítja újra a pályát. A mobilos görgetési módon kívül a játéktér a viewport bal oldalán a lehető legnagyobb arányos méretet használja, a cím, instrukció, előrehaladás és eredeti vezérlők pedig a külön görgethető jobb oldali sávba kerülnek.
 
-A fullscreen gomb a teljes dokumentumra (`document.documentElement`) kéri a böngésző teljes képernyős módját, nem csak a feladatelemre. Standard és WebKit API-t is kezel; a gombbal ismét kiléphetsz. Ahol az API nem támogatott, letiltott, a böngésző megtagadja vagy a kérés elakad, nagyított játéknézetre vált: a jobb oldali vezérlősáv 64 px-re összecsukódik, így a játék több helyet kap. A jobb felső gomb megmarad, és visszaállítja a vezérlőket. API nélküli környezetben a gomb neve „Játék nagyítása”, nagyított állapotban „Vissza a vezérlőkhöz”; a képernyőolvasó a korlátozásról is kap jelzést. Ez nem natív fullscreen, és nem tudja elrejteni a Safari saját címsorát. Forgatás, fullscreen és méretváltozás közben a legacy feladat állapota megmarad.
+Fekvő, érintőképernyős mobilnézetben (legfeljebb 600 px viewportmagasság, `pointer: coarse`) a jobb oldali sáv helyett a cím és a vezérlők a játék fölötti felső rétegben jelennek meg. Lefelé, fél viewportmagasságnyi oldalgörgetés elrejti a réteget; irányváltás után ugyanekkora felfelé görgetés visszahozza. A küszöb a görgetési távolságra, nem az ujj mozdulatának hosszára vonatkozik. A játék helyben marad, állapota megőrződik. A jobb szélen keskeny függőleges jelző, két iránynyíllal mutatja a küszöbig megtett távolságot. A rejtett vezérlőréteg nem fókuszálható és nem kezelhető. A felső gomb ebben a nézetben görgetéssel rejti el a sávot, nem kér natív fullscreent. Visszahozni felfelé görgetéssel lehet.
 
-iPhone-on a natív teljes dokumentumos fullscreen támogatása böngésző-/iOS-verziófüggő. A nagyított fallbacket böngészőben, hiányzó API-val szimulálva ellenőriztük; valódi iPhone-on külön eszközteszt szükséges. A normál vezérlősávhoz vissza kell lépni válaszellenőrzés vagy pályaváltás előtt.
+Ez valódi dokumentumgörgetés, így a Safari és az Android Chrome saját kezelősávja is reagálhat rá. A böngészősáv megjelenítése vagy elrejtése azonban nem vezérelhető és nem szinkronizálható garantáltan a weboldalból. A félképernyős küszöb időt ad a böngészőnek reagálni, de a reakció eszköz- és böngészőfüggő. Az eredeti és SVG-s változat görgetéses rétegét integrált böngészőben ellenőriztük; valódi iPhone- és Android-eszközön az érintéses görgetés és a böngészősáv viselkedése külön ellenőrzendő. Asztali nézetben a jobb oldali sáv és az alábbi fullscreen-kezelés változatlan marad.
+
+A mobilos görgetési módon kívül a fullscreen gomb a teljes dokumentumra (`document.documentElement`) kéri a böngésző teljes képernyős módját, nem csak a feladatelemre. Standard és WebKit API-t is kezel; a gombbal ismét kiléphetsz. Ahol az API nem támogatott, letiltott, a böngésző megtagadja vagy a kérés elakad, nagyított játéknézetre vált: a jobb oldali vezérlősáv 64 px-re összecsukódik, így a játék több helyet kap. A jobb felső gomb megmarad, és visszaállítja a vezérlőket. API nélküli környezetben a gomb neve „Játék nagyítása”, nagyított állapotban „Vissza a vezérlőkhöz”; a képernyőolvasó a korlátozásról is kap jelzést. Ez nem natív fullscreen, és nem tudja elrejteni a Safari saját címsorát. Forgatás, fullscreen és méretváltozás közben a legacy feladat állapota megmarad.
+
+iPhone-on a natív teljes dokumentumos fullscreen támogatása böngésző-/iOS-verziófüggő, de a fent leírt fekvő mobilos módban nem kérjük ezt az API-t. A nagyított fallbacket böngészőben, hiányzó API-val szimulálva ellenőriztük; valódi iPhone-on külön eszközteszt szükséges. Válaszellenőrzéshez vagy pályaváltáshoz a mobilos felső réteget felfelé görgetéssel, a nem mobilos fallback oldalsávját a gombbal kell visszahozni.
 
 Az eredmény- és információs panelek a viewporton belül maradnak, hosszabb tartalmuk külön görgethető. A legacy motornak gyökérhez viszonyított `lib` útvonalat adunk, így a HTTPS-címek régi normalizálója nem rontja el a helyes/hibás választ jelző ikonok URL-jét.
 
@@ -55,7 +68,7 @@ A keret webmanifesttel, 192/512 px-es alkalmazásikonokkal és 180 px-es Apple t
 2. Válaszd a **Megosztás → Főképernyőhöz adás** műveletet. Ha az iOS felkínálja, legyen bekapcsolva a **Megnyitás webalkalmazásként** lehetőség.
 3. A létrejött **Okosdoboz** ikonról indítsd az alkalmazást, majd fordítsd fekvő helyzetbe a telefont.
 
-A Safari-lap fullscreen gombja nem tudja automatikusan telepíteni vagy standalone módba váltani az oldalt. A kezdőképernyős alkalmazásban a gomb a játéktér nagyítását és a vezérlők visszaállítását végzi. Az indítás a konfigurált alapértelmezett feladatot választja; a manifest `start_url` és `scope` értéke `./`.
+A Safari-lap fullscreen gombja nem tudja automatikusan telepíteni vagy standalone módba váltani az oldalt. A kezdőképernyős alkalmazásban ugyanazok a nézeti feltételek érvényesek: fekvő, legfeljebb 600 px magas coarse-pointer nézetben a gomb a felső réteget rejti el görgetéssel, visszahozni felfelé görgetéssel lehet. Ezen a módon kívül a gomb natív fullscreen nélkül a nagyított fallbacket kapcsolja. Az indítás a konfigurált alapértelmezett feladat SVG-s változatát választja; a manifest `start_url` és `scope` értéke `./`.
 
 Ez **online standalone alkalmazás**, nem offline kiadás: nincs service worker és nincs feladatcache. Internetkapcsolat szükséges. A manifest/ikonok buildbe kerülését automatizált teszt ellenőrzi; a tényleges iPhone-os telepítés és címsor nélküli indítás valódi eszközön ellenőrzendő. A generált ikonok újrakészítése: `node scripts/generate-icons.mjs`.
 
@@ -91,23 +104,25 @@ pack build okosdoboz --builder heroku/builder:24 --env LESSONS_PREFIX=/content/l
 
 A prefix futásidőben nem módosítható fájláthelyezés nélkül. HTTPS-t a külső proxy/Ingress biztosít. A manifestet, ikonokat és legacy asseteket az alkalmazás buildje állítja elő, offline mód továbbra sincs.
 
-Ellenőrzés: a tényleges `pack build okosdoboz --builder heroku/builder:24` sikeres, Node.js 24.21.0 alatt mind a 16 Node-teszt lefutott. A buildpack felismerte a Procfile web folyamatát. Az image nem rootként, read-only fájlrendszerrel, eldobott capabilitykkel és 128 MiB memórialimittel elindult; a keret, konfiguráció, manifest és feladatasset 200-at, hiányzó asset 404-et adott. SIGTERM után 0-s exit kóddal leállt. A korábbi tárhelyhiány a jóváhagyott cache-takarítás után megszűnt. Registry-push és klaszterfrissítés ebben az ellenőrzésben nem történt.
+Korábbi buildpack-ellenőrzés, az SVG- és görgetési bővítések előtt: a tényleges `pack build okosdoboz --builder heroku/builder:24` sikeres, Node.js 24.21.0 alatt az akkori 16 Node-teszt lefutott. A buildpack felismerte a Procfile web folyamatát. Az image nem rootként, read-only fájlrendszerrel, eldobott capabilitykkel és 128 MiB memórialimittel elindult; a keret, konfiguráció, manifest és feladatasset 200-at, hiányzó asset 404-et adott. SIGTERM után 0-s exit kóddal leállt. Registry-push és klaszterfrissítés ebben a korábbi ellenőrzésben nem történt; a későbbi staging-rolloutot az alábbi fejezet rögzíti.
 
 ## Kubernetes
 
-A [k8s/deployment.yaml](k8s/deployment.yaml) a visszaállított, korábbi verzió: két példány, `runAsNonRoot: true`, rögzített `runAsUser: 101` és `runAsGroup: 101`, HTTP startup/readiness/liveness probe-ok. A memóriarequest **32 MiB**, a limit **128 MiB**; a CPU-request 50m, a limit 500m. A manifest **nem** állít `readOnlyRootFilesystem` értéket. A [k8s/service.yaml](k8s/service.yaml) belső `ClusterIP` Service: 80-as portja a podok 8080-as portjára mutat. A manifestek nem rögzítenek namespace-t.
+A [k8s/deployment.yaml](k8s/deployment.yaml) két példányt ír elő, `runAsNonRoot: true`, rögzített `runAsUser: 101` és `runAsGroup: 101`, valamint HTTP startup/readiness/liveness probe-ok mellett. A memóriarequest **32 MiB**, a limit **128 MiB**; a CPU-request 50m, a limit 500m. A manifest **nem** állít `readOnlyRootFilesystem` értéket. A [k8s/service.yaml](k8s/service.yaml) belső `ClusterIP` Service: 80-as portja a podok 8080-as portjára mutat. A manifestek nem rögzítenek namespace-t.
 
-**Buildpack-telepítés előtt ellenőrzendő:** a helyi image-próba a Heroku run image saját felhasználójával történt, nem kényszerített 101-es UID/GID-val. A jelenlegi Deployment ezt felülírja, ezért az új image klaszterbeli indíthatósága ezzel a manifesttel még nem igazolt. Az UID/GID és a memóriarequest összehangolása külön telepítési döntés; a dokumentáció ellenőrzése nem módosítja a visszaállított manifestet. A sikeres helyi read-only teszt szintén nem jelenti, hogy a manifest read-only futást ír elő.
+A kötelező pod anti-affinity az `app.kubernetes.io/name: okosdoboz-shell` címkéjű podokat ugyanazon namespace-en belül a `kubernetes.io/hostname` alapján külön node-okra ütemezi. Két példányhoz legalább két megfelelő node szükséges; további szabad node nélkül egy új pod Pending maradhat. Az alapértelmezett RollingUpdate két példánynál egy extra podot enged és nulla kiesést, ezért frissítéshez harmadik megfelelő node szükséges lehet. Az `IgnoredDuringExecution` szabály nem költözteti át automatikusan a már futó podokat.
+
+**Staging-ellenőrzés (2026-10-12):** az új build az `okosdoboz-shell` namespace-ben két Ready poddal, külön node-okon, nulla újraindulással futott; a két HTTPS-változat és a mobilos görgetési mód is elérhető volt. Ez igazolja a vizsgált image indíthatóságát a jelenlegi 101-es UID/GID-beállítással, nem minden későbbi build kompatibilitását. A sikeres korábbi helyi read-only teszt továbbra sem jelenti, hogy a manifest read-only futást ír elő.
 
 Telepítés előtt a Deployment `image` értékét állítsd a feltöltött, verziózott image nevére. A manifest jelenlegi értéke `cr.hvg.hu/os/okosdoboz-shell:poc`, `imagePullPolicy: Always` beállítással. A `pack build okosdoboz` csak helyi image-et készít: nem pusholja és nem indít rolloutot. Privát registry esetén a klaszter számára registry-hitelesítés szükséges; `imagePullSecrets` jelenleg nincs a manifestben.
 
 ```sh
-kubectl apply -f k8s/
-kubectl rollout status deployment/okosdoboz-shell
-kubectl port-forward service/okosdoboz-shell 8080:80
+kubectl -n okosdoboz-shell apply -f k8s/
+kubectl -n okosdoboz-shell rollout status deployment/okosdoboz-shell
+kubectl -n okosdoboz-shell port-forward service/okosdoboz-shell 8080:80
 ```
 
-A port-forward után http://localhost:8080/?lesson=1710 címen érhető el. A parancsok az aktuális kubectl context namespace-ét használják; más namespace-hez add hozzá a `-n <namespace>` kapcsolót. A [k8s/ingress.yaml](k8s/ingress.yaml) már tartalmaz `kong` ingressClass-szal HTTP route-ot az `okosdoboz-poc.staging-hvg.hu` hosthoz, TLS-konfiguráció nélkül. HTTPS-t külön külső proxy biztosíthat; ezt a manifest nem állítja be.
+A port-forward után http://localhost:8080/?lesson=1710 címen érhető el. A példa a stagingben már létező `okosdoboz-shell` namespace-t használja; más környezetben ezt módosítani és szükség esetén előre létrehozni kell. A [k8s/ingress.yaml](k8s/ingress.yaml) tartalmaz `kong` ingressClass-szal HTTP route-ot az `okosdoboz-poc.staging-hvg.hu` hosthoz, TLS-konfiguráció nélkül. A staging HTTPS-válaszain a Cloudflare/Kong proxyútvonalat ellenőriztük; TLS-t ez a manifest nem konfigurál.
 
 ## Források és konfiguráció
 
@@ -125,9 +140,10 @@ scripts/                       build és kiszolgálás
 tests/                         regressziós tesztek
 public/                        keretkonfiguráció
 assets/                        alkalmazásikonok
+experiments/1710-track-1/       hatpályás PNG/SVG-összehasonlító és SVG-segédfüggvények
 ```
 
-A [public/shell-config.json](public/shell-config.json) állítja a `lessonsPrefix`, `defaultLessonId`, `supportedLessonIds` és `loadTimeoutMs` értékeket. Új feladat azonos szerkezetben helyezhető el a `lessons/<ID>/` alatt, majd a manifest bővíthető; az adapterkódhoz nem kell új feladatág.
+A [public/shell-config.json](public/shell-config.json) állítja a `lessonsPrefix`, `defaultLessonId`, `supportedLessonIds` és `loadTimeoutMs` értékeket. Új feladat azonos szerkezetben helyezhető el a `lessons/<ID>/` alatt, majd a támogatott lista bővíthető; a generikus betöltőhöz nem kell új feladatág. Az SVG-adapter viszont jelenleg csak az 1710-es csomagot kezeli: új feladat SVG-felújításához külön pályaleírás és adapterbővítés, a betöltési kompatibilitásához pedig további teszt szükséges.
 
 Alternatív prefix fejlesztéskor: `LESSONS_PREFIX=/content/lessons npm run dev`. Éles buildnél ugyanezt a változót a buildhez kell megadni. A preview a buildben tárolt konfigurációt használja: csak a prefix JSON-értékének átírása nem mozgatja át a fájlokat. `LESSONS_SOURCE_DIR` másik forráskönyvtárat jelölhet, az új `lessons/` szerkezetben.
 
@@ -135,9 +151,11 @@ A motor a `lib` szülőjéből számolja az assetgyökeret. Ezért a `/lessons/1
 
 ## Ellenőrzés és korlátok
 
-Sikeres production/buildpack build és 16 Node-teszt: konfiguráció, fullscreen, betöltő, bájtazonos legacy output, production HTTP és standalone assetek. A [tests/lesson.spec.mjs](tests/lesson.spec.mjs) hat Playwright-tesztet tartalmaz; ezek létezése nem azonos a teljes suite sikeres futásával. Korábbi integrált böngészős próbák igazolták a hat pálya végigjátszását, az ikonútvonal-javítást, forgatást, popupokat és natív fullscreen működést. Ezek külön vizsgálatok voltak, nem minden eszközre és a jelenlegi branch teljes változására kiterjedő automatizált regresszió.
+Legutóbbi ellenőrzés (2026-10-12): sikeres production build és 21 Node-teszt, beleértve a konfigurációt, változatválasztást, fullscreen- és görgetési küszöbkezelést, betöltőt, bájtazonos legacy outputot, production HTTP-t és standalone asseteket. A korábbi buildpack-próba külön, az akkori 16 tesztes állapotban történt.
 
-Az automatizált Playwright-suite a jelenlegi Linux-környezetben hiányzó Chromium rendszerkönyvtárak miatt nem futott végig. Másik, előkészített gépen:
+A Playwright-suite 14 tesztet tartalmaz három fájlban: hat általános teszt a [tests/lesson.spec.mjs](tests/lesson.spec.mjs), hat SVG/változat teszt a [tests/svg-poc.spec.mjs](tests/svg-poc.spec.mjs), két mobilréteg-teszt a [tests/scroll-controls.spec.mjs](tests/scroll-controls.spec.mjs) alatt. A `--list` betöltési ellenőrzés sikeres, de nem E2E-futás. Integrált böngészőben mindkét változat hat pályája végigment választással, ellenőrzéssel, megoldással és eredményképernyővel; stagingen nem volt JavaScript-, HTTP- vagy hálózati hiba. A staging új buildjén touch-emulált 844 × 390 nézetben a görgetési réteg, a jelző, az elrejtés és visszahozás is működött. Helyben az elgörgetett játék válaszkezelését és a forgatás utáni állapotmegőrzést is ellenőriztük. Ezek nem valódi telefonos eszköztesztek.
+
+Az automatizált Playwright-suite a jelenlegi Linux-környezetben hiányzó Chromium rendszerkönyvtár (`libnspr4.so`) miatt nem jutott el az alkalmazás teszteléséig. Másik, előkészített gépen:
 
 ```sh
 npx playwright install chromium
@@ -306,9 +324,11 @@ A keret által fogadott `postMessage` üzeneteknél ellenőrizni kell az origint
 
 A keretrendszer kiválasztása önmagában nem oldja meg a régi motor reszponzivitását. Először a közvetlen betöltés kompatibilitását kell bizonyítani, és csak utána érdemes véglegesíteni az integrációt.
 
-## Későbbi megvalósítási lépések
+## Történeti megvalósítási terv
 
-1. **Dokumentáció véglegesítése.** Jelenleg kizárólag ez a README készül. Nincs csomagtelepítés, scaffold vagy legacy módosítás.
+Az alábbi lista az implementáció előtti tervet őrzi, nem az aktuális hátralévő feladatokat.
+
+1. **Dokumentáció véglegesítése.** Az eredeti tervezési fázisban kizárólag ez a README készült, csomagtelepítés, scaffold vagy legacy módosítás nélkül.
 2. **Alapmérés, külön jóváhagyás után.** Az eredeti feladat HTTP-s betöltése; DOM-méretek, assetútvonalak és interakciók rögzítése. Hipotézis: a keskeny elrendezés fő akadálya a közös minimumszélesség, viewport és kezelősáv. Olcsó ellenőrzés: 390 px-en összevetni a dokumentum, konténer és feladattér tényleges méretét.
 3. **Parcel kiszolgálás és minimális közvetlen betöltési próba.** Az alapmérés után: változatlan legacy másolás, stabil URL-prefix, klasszikus scriptbetöltés, egyszeri inicializálás. Ellenőrzés: létrejön-e a feladattér, és működnek-e a dinamikus URL-ek fejlesztésben és éles buildben.
 4. **Reszponzív keretadapter.** Sikeres indulás után: CSS-ütközések, kezelősávmagasság, konténer-resize, betöltési és hibaállapot, Fullscreen API és fallback kezelése. A CSS-leltár a kiszolgálási próba előkészítésével párhuzamosan készülhet.
@@ -335,7 +355,7 @@ Astro választásakor külön feladatoldal, `LegacyTask.astro` komponens és `pu
 
 ## Ellenőrzési feltételek
 
-A dokumentáció ellenőrzése: csak ez a README módosuljon; a helyi hivatkozások létezzenek; a bizonyított tények, hipotézisek és jövőbeli lépések váljanak el egymástól.
+Az eredeti dokumentációs fázis ellenőrzése csak a README-re vonatkozott. A jelenlegi leírásoknál a helyi hivatkozások létezését és a bizonyított tények, hipotézisek, történeti tervek és hátralévő vizsgálatok elkülönítését kell ellenőrizni.
 
 A későbbi keret elfogadási feltételei:
 
@@ -358,7 +378,7 @@ Nem cél a feladatadatok átírása, a jQuery/CreateJS/MathJax frissítése, tö
 
 Parcel, Express production kiszolgálás, buildpack build és a konfigurálható prefix már megvalósult. Nyitott feladat a további feladattípusok, valódi mobilok és a teljes regressziós mátrix ellenőrzése; Astro és iframe nincs implementálva.
 
-A közös motor vagy lejátszó módosítása külön döntést igényel. A következő fejlesztési lépés csak a dokumentáció elfogadása és új jóváhagyás után indul.
+A közös motor vagy lejátszó módosítása továbbra is külön döntést igényel. Az egykori dokumentációs jóváhagyási kapu történeti előzmény; a jelenlegi implementáció és ellenőrzési eredmények a dokumentum első felében szerepelnek.
 
 ## Források
 

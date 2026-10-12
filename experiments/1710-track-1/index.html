@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="hu">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f4f7f5">
+    <title>1710 / 1. pálya / hibrid SVG POC</title>
+    <link rel="stylesheet" href="./style.css">
+    <script type="module" src="./main.js"></script>
+  </head>
+  <body>
+    <header class="page-header">
+      <a class="back-link" href="/">Okosdoboz</a>
+      <div>
+        <h1>1710 / 1. pálya</h1>
+        <p>Raszter és külön SVG-szövegréteg</p>
+      </div>
+      <label class="track-picker">Pálya
+        <select id="track-picker" aria-label="Pálya kiválasztása">
+          <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+          <option value="4">4</option><option value="5">5</option><option value="6">6</option>
+        </select>
+      </label>
+      <output id="scale-readout" aria-live="polite">Kép betöltése</output>
+    </header>
+    <main>
+      <section class="comparison" aria-label="Eredeti és hibrid kép összehasonlítása">
+        <article class="sample">
+          <header><h2>Eredeti PNG</h2><span>szöveg és illusztráció raszterben</span></header>
+          <div class="artboard"><img id="original" alt="A pálya eredeti képe a négy válaszkezdettel"></div>
+        </article>
+        <article class="sample">
+          <header><h2>Hibrid SVG</h2><span>PNG-illusztráció, külön méretezhető szöveg</span></header>
+          <div class="artboard">
+            <svg id="hybrid" viewBox="0 0 3150 1350" role="img" aria-labelledby="svg-title svg-desc">
+              <title id="svg-title">Hibrid SVG-változat</title>
+              <desc id="svg-desc">Az eredeti rajzolt háttér PNG marad; a négy magyar prompt szerkeszthető SVG-szöveg.</desc>
+            </svg>
+          </div>
+        </article>
+      </section>
+      <p id="load-error" role="alert" hidden></p>
+      <footer>Ez a nézet nem interaktív feladat. A teljes kép képaránya és koordinátái változatlanok; csak a promptok kerülnek külön szövegrétegre. Ez a PNG/SVG-hibrid élesebb nagyítást és kezelhető szöveget ad, de önmagában nem rendezi át mobilon a négypaneles feladatot.</footer>
+    </main>
+  </body>

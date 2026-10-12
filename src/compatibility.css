@@ -1,4 +1,5 @@
 body.parcel-lesson-shell { min-width: 0; height: 100dvh; min-height: 0; max-height: none; overflow: hidden; }
+html.mobile-scroll body.parcel-lesson-shell { height: 300svh; overflow: visible; }
 #odPlayer { height: auto; max-width: 100%; }
 #odPlayer > .drwmsg-player { position: relative; height: auto; max-height: none; }
 #odPlayer .drwmsg-flex-container { height: auto; }

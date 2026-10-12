@@ -36,6 +36,7 @@ if (preview) {
   for (const id of config.supportedLessonIds) serveLibrary(prefix + '/' + id + '/lib');
   app.use(prefix, express.static(sourceRoot, staticOptions));
   app.use(prefix, (_request, response) => response.status(404).type('text').send('Asset not found'));
+  app.use('/experiments', express.static(path.join(shellRoot, 'experiments'), { fallthrough: false, dotfiles: 'deny' }));
   app.use('/compatibility.css', express.static(path.join(shellRoot, 'src/compatibility.css')));
   const internalPort = Number(process.env.PARCEL_PORT || port + 1);
   proxy = httpProxy.createProxyServer({ target: `http://127.0.0.1:${internalPort}`, ws: true });

@@ -27,3 +27,22 @@ html.expanded #fullscreen-notice { display: block !important; position: absolute
 #rotate-prompt h1 { font-size: 26px; margin: 0 0 12px; }
 #rotate-prompt p { font-size: 18px; max-width: 300px; margin: 0; }
 @media (max-height: 600px), (max-width: 900px) { :root { --rail-width: 210px; } #controls { padding: 8px; } .shell-header { margin-bottom: 8px; } .shell-brand { font-size: 20px; } }
+
+html.mobile-scroll { --rail-width: 0px; overflow-y: auto; }
+html.mobile-scroll body.parcel-lesson-shell { height: 300svh; overflow: visible; }
+html.mobile-scroll #experience { position: fixed; inset: 0; grid-template-columns: minmax(0, 1fr); height: 100dvh; }
+html.mobile-scroll .lesson-container { padding-right: calc(20px + env(safe-area-inset-right, 0px)); }
+html.mobile-scroll #controls { position: absolute; top: env(safe-area-inset-top, 0px); left: env(safe-area-inset-left, 0px); right: calc(20px + env(safe-area-inset-right, 0px)); max-height: 65dvh; border: 0; border-bottom: 1px solid #ccd9d1; box-shadow: 0 4px 12px #20352c26; padding: 8px 16px; transition: transform 180ms ease; z-index: 65000000; }
+html.mobile-scroll.controls-hidden #controls { transform: translateY(calc(-100% - env(safe-area-inset-top, 0px))); visibility: hidden; }
+html.mobile-scroll #controls .shell-header { margin: 0; }
+html.mobile-scroll #controls .drwmsg-player-header-content { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
+html.mobile-scroll #controls .drwmsg-game-header { flex-direction: row; gap: 16px; }
+html.mobile-scroll #controls .drwmsg-game-title-box { flex: 1; margin-bottom: 0; }
+html.mobile-scroll #controls .drwmsg-check-box { width: 160px; flex-shrink: 0; }
+#scroll-indicator { position: fixed; right: calc(5px + env(safe-area-inset-right, 0px)); top: 25dvh; width: 6px; height: 50dvh; border: 1px solid #809a8d; border-radius: 4px; background: #dce8e1; z-index: 65000001; pointer-events: none; }
+#scroll-indicator span { display: block; width: 100%; height: 100%; background: #137f60; border-radius: 3px; transform: scaleY(var(--scroll-progress, 0)); transform-origin: top; }
+#scroll-indicator[data-direction="up"] span { transform-origin: bottom; }
+#scroll-indicator::before, #scroll-indicator::after { content: ''; position: absolute; left: -2px; width: 8px; height: 8px; border-top: 2px solid #137f60; border-left: 2px solid #137f60; }
+#scroll-indicator::before { top: -12px; transform: rotate(45deg); }
+#scroll-indicator::after { bottom: -12px; transform: rotate(225deg); }
+@media (prefers-reduced-motion: reduce) { html.mobile-scroll #controls { transition: none; } }
