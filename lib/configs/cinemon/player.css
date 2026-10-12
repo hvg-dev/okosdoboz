@@ -1,0 +1,139 @@
+.drwmsg-endscreen {
+    background-image: url(img/cinemon_final_bg.jpg);
+    background-size: cover;
+    background-position: 50%;
+    width: 90%!important;
+    border-style: none;
+    padding-top: 60px;
+    padding-bottom: 40px;
+    padding-top: 40px;
+}
+
+.drwmsg_endscreen_outcome {
+    color: #2e123e;
+    font-size: 45px;
+    font-family: Arial, Verdana, sans-serif;
+}
+
+.drwmsg_endscreen_text{
+    display:none;
+}
+
+.drwmsg-endscreen .drwmsg-bton_center {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    background-color: #FF9800;
+}
+
+.drwmsg_endscreen_left {
+    display: inline-block;
+    white-space: nowrap;
+    width: 50%;
+    text-align: right;
+    padding-right: 20px;
+}
+
+.drwmsg_endscreen_right {
+    width: 50%;
+    text-align: left;
+    display: initial;
+}
+
+.drwmsg_endscreen_percent {
+    background-color: transparent;
+    font-size: 45px;
+    display: block;
+    width: 350px;
+    position: relative;
+    align-content: center;
+    align-items: center;
+    color: #2e123e;
+    font-family: Arial, Verdana, sans-serif;
+}
+
+.drwmsg_endscreen_scorewor .drwmsg_endscreen_left{
+    display:none;
+}
+
+.drwmsg_endscreen_scorewor .drwmsg_endscreen_right {
+    width: 100%;
+    text-align: center;
+    display: block;
+}
+
+.drwmsg_endscreen_scorewor {
+    border-bottom-style: none;
+    font-size: 25px;
+}
+
+.drwmsg_endscreen_scores {
+    min-height: 70px;
+    color: #3c1850;
+}
+
+.bg_eval.sad .bird{
+    background-image: url(img/bird_sad.png);
+}
+
+.bg_eval.happy .bird{
+    background-image: url(img/bird_happy.png);
+}
+
+.bg_eval.sad .boy{
+    background-image: url(img/boy_sad.png);
+}
+
+.bg_eval.happy .boy{
+    background-image: url(img/boy_happy.png);
+}
+
+.bg_eval.sad .girl{
+    background-image: url(img/girl_sad.png);
+}
+
+.bg_eval.happy .girl{
+    background-image: url(img/girl_happy.png);
+}
+
+.bg_eval {
+    display: block;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    z-index: -1;
+}
+
+.bg_eval .bird {
+    width: 200px;
+    height: 200px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: 50% 100%;
+    left: 0;
+    bottom: 20px;
+    position: absolute;
+}
+
+.bg_eval .boy {
+    width: 25%;
+    height: 80%;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: 50% 100%;
+    right: 0;
+    bottom: 20px;
+    position: absolute;
+}
+
+.bg_eval .girl {
+    width: 30%;
+    height: 80%;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: 50% 100%;
+    right: 0;
+    bottom: 20px;
+    position: absolute;
+}
