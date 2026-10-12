@@ -32,12 +32,22 @@ export function validateConfig(input, origin) {
 
 export function selectLesson(config, search) {
   const params = new URLSearchParams(search);
-  if ([...params.keys()].some(key => key !== 'lesson') || params.getAll('lesson').length > 1) {
-    throw new Error('Csak egy lesson paraméter használható.');
+  if ([...params.keys()].some(key => !['lesson', 'version'].includes(key)) || params.getAll('lesson').length > 1) {
+    throw new Error('Csak egy lesson és egy version paraméter használható.');
   }
+  selectLessonVersion(search);
   const lessonId = params.has('lesson') ? params.get('lesson') : config.defaultLessonId;
   if (!config.supportedLessonIds.includes(lessonId)) throw new Error('Ismeretlen feladat.');
   return lessonId;
+}
+
+export function selectLessonVersion(search) {
+  const params = new URLSearchParams(search);
+  const version = params.has('version') ? params.get('version') : 'svg';
+  if (params.getAll('version').length > 1 || !['original', 'svg'].includes(version)) {
+    throw new Error('A version paraméter original vagy svg lehet, és csak egyszer adható meg.');
+  }
+  return version;
 }
 
 export function lessonUrls(config, lessonId, origin) {

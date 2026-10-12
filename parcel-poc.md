@@ -4,6 +4,8 @@
 
 Ez a dokumentum a jelenlegi POC architektúráját és fennmaradó ellenőrzési feladatait tartalmazza. A keret implementált; a futtatási parancsok a [README.md](README.md) dokumentumban szerepelnek. A tesztterv nem jelenti minden eszköz és feladattípus igazolt támogatását.
 
+Az eredeti feladatképek vektorizálásának korlátait és a 1710 mind a hat pályájára kiterjesztett raszter+SVG-szövegréteget a [README SVG leírása](README.md#futtatás) rögzíti. A teljes csomag külön `/?lesson=1710&version=original` és `/?lesson=1710&version=svg` URL-en játszható végig. A változat nélküli cím SVG-s marad. Csak az SVG-s változatban cseréli le az adapter az aktuális track `id104` háttérképét, majd minden pályaváltás után az új track overlay-ét építi fel. A `#svg-poc-1710-1` hash-flag csak az SVG-s változat determinisztikus teszteléséhez az első pályára és sorrendbe állítja a játékot. A track JSON-ok, eredeti PNG-k és legacy motor forrása változatlan; a válaszmezők aktívak. A raszteres illusztráció nem vektorizálódik, és mobilos újratördelés sincs.
+
 ## Megvalósult szerkezet és eltérések
 
 Az új forrásstruktúra feladatonként külön asseteket tartalmaz:
@@ -173,7 +175,7 @@ A [public/shell-config.json](public/shell-config.json) jelenlegi konfigurációj
 
 A feladatválasztás `?lesson=1710` alapján történik, hiányzó paraméternél az alapértékkel. Az ID karakterlánc, 1–12 számjegy, pozitív és vezető nulla nélküli. Üres, duplikált, hibás vagy a manifestből hiányzó ID hibát eredményez a bootstrap előtt. Nem szűkítjük az adaptert egy 1710-re írt feltételre.
 
-A POC csak a `lesson` query kulcsot fogadja el. Az `id`, `config`, `player`, `currentgame`, `currenttrack`, `playersize`, `datatype` és minden más kulcs elutasítandó. A motor is feldolgozza a `window.location.search` értékét; ezzel megakadályozzuk a keret választásának véletlen felülírását. Nem írjuk át észrevétlenül az URL-t History API-val.
+A POC csak a `lesson` és `version` query kulcsokat fogadja el, mindkettőt legfeljebb egyszer. A `version` értéke `original` vagy `svg`, alapértéke `svg`. Az `id`, `config`, `player`, `currentgame`, `currenttrack`, `playersize`, `datatype` és minden más kulcs elutasítandó. A motor is feldolgozza a `window.location.search` értékét; ezzel megakadályozzuk a keret választásának véletlen felülírását. Nem írjuk át észrevétlenül az URL-t History API-val.
 
 Prefixvalidáció még URL-normalizálás előtt is szükséges. Elutasítandó a cross-origin vagy protokollrelatív URL, credentials, query/hash, visszaperjel, pontszegmens, útvonalbejárás és kódolt szeparátor. A POC egyszerű szabályaként a prefixben százalékosan kódolt szegmens sem engedélyezett. A puszta `/` nem használható mountként. A prefixben és a feladatazonosítóban nincs tetszőleges felhasználói script-URL.
 

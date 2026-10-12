@@ -78,12 +78,14 @@ export function installFullscreen({ document, button, notice, onResize }) {
   button.addEventListener('click', toggle);
   document.addEventListener('fullscreenchange', changed);
   document.addEventListener('webkitfullscreenchange', changed);
+  document.addEventListener('controls-modechange', update);
   document.addEventListener('keydown', escape);
   update();
   return () => {
     button.removeEventListener('click', toggle);
     document.removeEventListener('fullscreenchange', changed);
     document.removeEventListener('webkitfullscreenchange', changed);
+    document.removeEventListener('controls-modechange', update);
     document.removeEventListener('keydown', escape);
   };
 }

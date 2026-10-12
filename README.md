@@ -6,6 +6,15 @@ Az első, konzervatív POC implementációja a [package.json](package.json) alat
 
 ## Futtatás
 
+Az 1710-es feladatcsomag mind a hat pályája két külön URL-en játszható végig ugyanabban a reszponzív keretben:
+
+- Eredeti, PNG-s változat: http://localhost:3000/?lesson=1710&version=original
+- Felújított, SVG-s változat: http://localhost:3000/?lesson=1710&version=svg
+
+A `version` paraméter fejlesztésben, preview-ban és productionben is működik; telepített környezetben csak a hostot kell cserélni. A változat nélküli `/?lesson=1710` és `/` cím megtartja az SVG-s alapértelmezést. Mindkét változat a legacy motor szokásos pályasorrendjét, válaszválasztását, ellenőrzését, megoldását és eredményképernyőjét használja. Az eredeti változatban az SVG-adapter nem fut le. Üres, ismeretlen vagy többször megadott `version` értéknél a motor nem indul el.
+
+Az SVG-s változat mind a hat pályán külön SVG-szövegrétegként jeleníti meg a képre égetett promptokat. A nem interaktív SVG-összehasonlító a `npm run dev` után a [/experiments/1710-track-1/](experiments/1710-track-1/index.html) címen érhető el; a pályaválasztóval 1–6 között válthatsz. A determinisztikus, első pályáról induló SVG-végigteszt útvonala `/?lesson=1710&version=svg#svg-poc-1710-1`. A motor adaptere csak az aktuális pálya `id104` háttérelemét cseréli le, trackváltás után a megfelelő prompttal; a válaszmezők és a legacy motor változatlanok. A PNG-illusztráció raszter marad (az SVG-be ágyazva), a négy prompt SVG `<text>` rétegre kerül. A koordinátás feladatot nem rendezi át mobilra. Az eredeti pályaadatot és PNG-ket nem módosítja.
+
 Node.js 24 szükséges (a buildpack is a `24.x` főverziót használja). A repository gyökeréből:
 
 ```sh
@@ -16,6 +25,10 @@ npm run dev
 A keret címe: **http://localhost:3000/?lesson=1710**. Másik port: `PORT=3100 npm run dev`. A belső Parcel-port alapértelmezésben a külső port + 1; `PARCEL_PORT` értékkel felülírható. Nincs iframe, és nincs SPA-feladatcsere.
 
 Telefonméretű álló nézetben (legfeljebb 600 px széles portrait viewport) a keret a telefon elfordítását kéri. A feladat betöltve marad, a háttérben lévő vezérlők ilyenkor nem kezelhetők; visszaforgatás nem indítja újra a pályát. A játéktér a viewport bal oldalán a lehető legnagyobb arányos méretet használja, a cím, instrukció, előrehaladás és eredeti vezérlők pedig a külön görgethető jobb oldali sávba kerülnek.
+
+Fekvő, érintőképernyős mobilnézetben (legfeljebb 600 px viewportmagasság, `pointer: coarse`) a jobb oldali sáv helyett a cím és a vezérlők a játék fölötti felső rétegben jelennek meg. Lefelé, fél viewportmagasságnyi oldalgörgetés elrejti a réteget; irányváltás után ugyanekkora felfelé görgetés visszahozza. A küszöb a görgetési távolságra, nem az ujj mozdulatának hosszára vonatkozik. A játék helyben marad, állapota megőrződik. A jobb szélen keskeny függőleges jelző, két iránynyíllal mutatja a küszöbig megtett távolságot. A rejtett vezérlőréteg nem fókuszálható és nem kezelhető. A felső gomb ebben a nézetben görgetéssel rejti el a sávot, nem kér natív fullscreent. Visszahozni felfelé görgetéssel lehet.
+
+Ez valódi dokumentumgörgetés, így a Safari és az Android Chrome saját kezelősávja is reagálhat rá. A böngészősáv megjelenítése vagy elrejtése azonban nem vezérelhető és nem szinkronizálható garantáltan a weboldalból. A félképernyős küszöb időt ad a böngészőnek reagálni, de a reakció eszköz- és böngészőfüggő. Az eredeti és SVG-s változat görgetéses rétegét integrált böngészőben ellenőriztük; valódi iPhone- és Android-eszközön az érintéses görgetés és a böngészősáv viselkedése külön ellenőrzendő. Asztali nézetben a jobb oldali sáv és az alábbi fullscreen-kezelés változatlan marad.
 
 A fullscreen gomb a teljes dokumentumra (`document.documentElement`) kéri a böngésző teljes képernyős módját, nem csak a feladatelemre. Standard és WebKit API-t is kezel; a gombbal ismét kiléphetsz. Ahol az API nem támogatott, letiltott, a böngésző megtagadja vagy a kérés elakad, nagyított játéknézetre vált: a jobb oldali vezérlősáv 64 px-re összecsukódik, így a játék több helyet kap. A jobb felső gomb megmarad, és visszaállítja a vezérlőket. API nélküli környezetben a gomb neve „Játék nagyítása”, nagyított állapotban „Vissza a vezérlőkhöz”; a képernyőolvasó a korlátozásról is kap jelzést. Ez nem natív fullscreen, és nem tudja elrejteni a Safari saját címsorát. Forgatás, fullscreen és méretváltozás közben a legacy feladat állapota megmarad.
 
