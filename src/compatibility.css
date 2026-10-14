@@ -1,5 +1,4 @@
 body.parcel-lesson-shell { min-width: 0; height: 100dvh; min-height: 0; max-height: none; overflow: hidden; }
-html.mobile-scroll body.parcel-lesson-shell { height: 300svh; overflow: visible; }
 #odPlayer { height: auto; max-width: 100%; }
 #odPlayer > .drwmsg-player { position: relative; height: auto; max-height: none; }
 #odPlayer .drwmsg-flex-container { height: auto; }
@@ -38,3 +37,13 @@ html.mobile-scroll body.parcel-lesson-shell { height: 300svh; overflow: visible;
 #odPlayer .drwmsg-endtrans { z-index: 60000000; }
 #odPlayer .drwmsg-layer_trans { position: fixed; inset: 0 var(--rail-width) 0 0; width: auto !important; height: auto !important; z-index: 59999999; }
 #odPlayer .drwmsg-preload_layer { position: absolute; }
+html.mobile-layout .shell-header .drwmsg-check-box { flex-direction: row !important; justify-content: flex-end; flex: 1 1 auto; width: auto; gap: 8px; }
+html.mobile-layout .shell-header .drwmsg-nav_ul { width: auto; flex: 0 1 auto; min-height: 40px; padding: 0 14px; white-space: nowrap; }
+html.mobile-layout #controls .drwmsg-player-header { margin: 0 0 4px; }
+html.mobile-layout #controls .drwmsg-player-header-content { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 2px 12px; }
+html.mobile-layout #controls .drwmsg-player-title { font-size: 16px; line-height: 1.2; }
+html.mobile-layout #controls .drwmsg-progress-bar-distinct { margin: 0; }
+html.mobile-layout #controls .drwmsg-navigation { margin: 0 0 0 auto; }
+html.mobile-layout #controls .drwmsg-navigation .drwmsg-nav_ul { min-height: 28px; line-height: 28px; width: auto; padding: 0 10px; }
+html.mobile-layout #controls .drwmsg-game-title-box { margin-bottom: 0; }
+html.mobile-layout #controls .drwmsg-game-title { font-size: 14px !important; line-height: 1.25; }

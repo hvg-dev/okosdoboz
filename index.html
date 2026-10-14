@@ -15,7 +15,14 @@
   </head>
   <body class="parcel-lesson-shell">
     <main id="experience">
-      <div class="lesson-container"><div id="odPlayer" class="odPlayer" playersize="embedded"></div></div>
+      <div class="lesson-container">
+        <div id="odPlayer" class="odPlayer" playersize="embedded"></div>
+        <div id="rotate-card">
+          <i data-lucide="rotate-cw" aria-hidden="true"></i>
+          <h2>Fordítsd el a telefont!</h2>
+          <p>A feladatot fekvő helyzetben tudod megoldani.</p>
+        </div>
+      </div>
       <aside id="controls" aria-label="Feladat vezérlői">
         <header class="shell-header">
           <a class="shell-brand" href="./">Okosdoboz</a>
@@ -26,11 +33,6 @@
         <button id="retry" type="button" hidden>Újratöltés</button>
       </aside>
     </main>
-    <div id="scroll-indicator" aria-hidden="true" hidden><span></span></div>
-    <div id="rotate-prompt" role="dialog" aria-modal="true" aria-labelledby="rotate-title" hidden>
-      <i data-lucide="rotate-cw" aria-hidden="true"></i>
-      <h1 id="rotate-title">Fordítsd el a telefont!</h1>
-      <p>A feladatot fekvő helyzetben tudod megoldani.</p>
-    </div>
+    <button id="bar-tab" type="button" title="Vezérlők megjelenítése" aria-label="Vezérlők megjelenítése" hidden></button>
   </body>
 </html>

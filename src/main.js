@@ -4,7 +4,7 @@ import { startLesson } from './lesson-loader.js';
 import { waitForTask } from './readiness.js';
 import { observeLayout } from './layout.js';
 import { installFullscreen } from './fullscreen.js';
-import { installScrollControls } from './scroll-controls.js';
+import { installMobileLayout } from './mobile-layout.js';
 import { createHybridSvgUrl, getHybridTrack, loadOriginalImage } from '../experiments/1710-track-1/hybrid.js';
 
 createIcons({ icons: { Maximize, RotateCw } });
@@ -15,29 +15,18 @@ window.addEventListener('pagehide', () => {
 }, { once: true });
 const status = document.getElementById('status');
 const retry = document.getElementById('retry');
-const experience = document.getElementById('experience');
 const fullscreenButton = document.getElementById('fullscreen');
-const rotatePrompt = document.getElementById('rotate-prompt');
-const phonePortrait = window.matchMedia('(orientation: portrait) and (max-width: 600px)');
-function updateOrientation() {
-  rotatePrompt.hidden = !phonePortrait.matches;
-  experience.inert = phonePortrait.matches;
-}
-phonePortrait.addEventListener('change', updateOrientation);
-window.addEventListener('resize', updateOrientation);
 let viewport = `${window.innerWidth}:${window.innerHeight}`;
 function refreshViewport() {
   const next = `${window.innerWidth}:${window.innerHeight}`;
   if (next !== viewport) {
     viewport = next;
-    updateOrientation();
     window.dispatchEvent(new Event('resize'));
   }
 }
 document.addEventListener('visibilitychange', refreshViewport);
 const viewportTimer = setInterval(() => { if (document.hidden) refreshViewport(); }, 500);
 window.addEventListener('pagehide', () => clearInterval(viewportTimer), { once: true });
-updateOrientation();
 retry.addEventListener('click', () => location.reload());
 installFullscreen({
   document,
@@ -45,7 +34,7 @@ installFullscreen({
   notice: document.getElementById('fullscreen-notice'),
   onResize: () => window.dispatchEvent(new Event('resize'))
 });
-installScrollControls({ window, document, button: fullscreenButton });
+const mobileLayout = installMobileLayout({ window, document, button: fullscreenButton });
 
 async function main() {
   const controller = new AbortController();
@@ -90,6 +79,7 @@ async function main() {
     });
     const controls = document.getElementById('controls');
     controls.append(root.carco.playeritems.playerheader, root.carco.playeritems.gametitle_box.parentElement);
+    mobileLayout.refresh();
     cleanup = observeLayout(root);
     onState('task-loading');
     await waitForTask(root, lessonId, controller.signal);

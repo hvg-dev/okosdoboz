@@ -72,13 +72,11 @@ test('portrait kérés, forgatás és állapotmegőrzés', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/');
   await expect(page.locator('body')).toHaveAttribute('data-state', 'ready');
-  await expect(page.locator('#rotate-prompt')).toBeVisible();
-  expect(await page.locator('#experience').evaluate(item => item.inert)).toBe(true);
+  await expect(page.locator('#rotate-card')).toBeVisible();
   const track = await page.evaluate(() => window.drwmsg.carco.paramsdata.system.currenttrack);
   await page.screenshot({ path: 'test-results/portrait.png', fullPage: true });
   await page.setViewportSize({ width: 844, height: 390 });
-  await expect(page.locator('#rotate-prompt')).toBeHidden();
-  expect(await page.locator('#experience').evaluate(item => item.inert)).toBe(false);
+  await expect(page.locator('#rotate-card')).toBeHidden();
   expect(await page.evaluate(() => window.drwmsg.carco.paramsdata.system.currenttrack)).toBe(track);
   await page.waitForTimeout(2000);
   const mutations = await page.evaluate(async () => {
@@ -144,8 +142,7 @@ test('magas eredménypanel mobilon is görgethető és a játék fölött marad'
     return rect.bottom <= innerHeight && button.contains(target);
   })).toBe(true);
   await page.setViewportSize({ width: 390, height: 844 });
-  await expect(page.locator('#rotate-prompt')).toBeVisible();
-  expect(await page.evaluate(() => document.getElementById('rotate-prompt').contains(document.elementFromPoint(innerWidth / 2, innerHeight / 2)))).toBe(true);
+  await expect(page.locator('#rotate-card')).toBeVisible();
 });
 
 test('hibás query nem indít motort, hiányzó asset valódi 404', async ({ page, request }) => {

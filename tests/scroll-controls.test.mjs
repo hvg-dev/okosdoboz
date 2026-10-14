@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { advanceScroll } from '../src/scroll-controls.js';
+import { advanceScroll } from '../src/mobile-layout.js';
 
 test('half-screen movement hides and reveals controls', () => {
   let state = { direction: 0, distance: 0, hidden: false };
