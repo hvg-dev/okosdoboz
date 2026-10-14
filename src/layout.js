@@ -9,7 +9,8 @@ export function observeLayout(root) {
   function measure() {
     frame = undefined;
     const available = container.getBoundingClientRect();
-    const nextWidth = Math.max(1, Math.min(available.width - 8, (available.height - 14) * 3150 / 1350));
+    const availableHeight = document.documentElement.classList.contains('mobile-layout') ? window.innerHeight : available.height;
+    const nextWidth = Math.max(1, Math.min(available.width - 8, (availableHeight - 14) * 3150 / 1350));
     if (Math.abs(width - nextWidth) > 1) {
       width = nextWidth;
       document.getElementById('odPlayer').style.width = width + 'px';

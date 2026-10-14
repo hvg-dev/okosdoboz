@@ -14,8 +14,7 @@ export function installMobileLayout({ window, document, button }) {
   const lesson = document.querySelector('.lesson-container');
   const landscape = window.matchMedia('(orientation: landscape) and (max-height: 600px) and (pointer: coarse)');
   const portrait = window.matchMedia('(orientation: portrait) and (max-width: 600px)');
-  const marker = document.createComment('check-box');
-  let box;
+  const parts = ['.drwmsg-check-box'].map(selector => ({ selector, node: null, marker: document.createComment(selector) }));
   let mode = null;
   let state = { direction: 0, distance: 0, hidden: false };
   let peek = false;
@@ -26,11 +25,13 @@ export function installMobileLayout({ window, document, button }) {
     return !standalone && Boolean(document.fullscreenEnabled || document.webkitFullscreenEnabled);
   }
   function place() {
-    box ||= document.querySelector('#controls .drwmsg-check-box');
-    if (!box) return;
-    if (!marker.parentNode) box.before(marker);
-    if (mode) { if (box.parentNode !== header) button.before(box); }
-    else if (box.parentNode === header) marker.before(box);
+    for (const part of parts) {
+      part.node ||= document.querySelector('#controls ' + part.selector);
+      if (!part.node) continue;
+      if (!part.marker.parentNode) part.node.before(part.marker);
+      if (mode) { if (part.node.parentNode !== header) button.before(part.node); }
+      else if (part.node.parentNode === header) part.marker.before(part.node);
+    }
   }
   function render() {
     const hidden = Boolean(mode) && !peek && state.hidden && window.scrollY > header.offsetHeight;
